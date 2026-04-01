@@ -2,7 +2,7 @@ package Phase_1.week_1.part_3.Problem_3;
 
 public class Problem_3 {
     public static void main(String[] args) {
-        DatabaseConnector databaseConnector = new MySQLConnector("sql.com", "aditya@gupta", "983515");
+        DatabaseConnector databaseConnector = new MySQLConnector("username", "sql.com", "12345!@");
         databaseConnector.testConnection();
     }
 }
