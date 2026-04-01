@@ -1,6 +1,5 @@
-package Phase_1.week_2.part_1;
+package Phase_1.week_2.part_1.arrayList;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

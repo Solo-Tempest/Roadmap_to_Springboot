@@ -1,4 +1,4 @@
-package Phase_1.week_2.part_1;
+package Phase_1.week_2.part_1.arrayList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,9 +15,11 @@ public class SearchProductInList {
 
         int count = 0;
         for (String l : list) {
-            if (l.contains("a")  || l.contains("A")) count++;
+            if (l.contains("a") || l.contains("A")) count++;
         }
 
-        System.out.println("lists which contains 'a': " + count);
+        int c = (int) list.stream().filter(a -> a.toLowerCase().contains("a")).count();
+
+        System.out.println("lists which contains 'a': " + c);
     }
 }

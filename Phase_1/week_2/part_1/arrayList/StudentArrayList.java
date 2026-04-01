@@ -1,4 +1,4 @@
-package Phase_1.week_2.part_1;
+package Phase_1.week_2.part_1.arrayList;
 
 import java.util.ArrayList;
 import java.util.List;
