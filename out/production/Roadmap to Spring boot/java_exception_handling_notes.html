@@ -1,0 +1,1915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java Exception Handling — Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Fraunces:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── CSS VARIABLES ─────────────────────────────────────────── */
+:root {
+  --bg:        #eeebe5;
+  --bg2:       #e4e0d8;
+  --card:      #f5f2ec;
+  --card2:     #ede9e1;
+  --border:    #d0cbc0;
+  --text:      #1e1a14;
+  --text2:     #5a5448;
+  --accent:    #c0392b;
+  --accent2:   #e67e22;
+  --sidebar-bg:#1e1a14;
+  --sidebar-tx:#e8e4dc;
+  --sidebar-ac:#f39c12;
+  --sidebar-w: 260px;
+  --prog-fill: #e67e22;
+  --shadow:    0 2px 12px rgba(0,0,0,0.08);
+  --radius:    10px;
+  --trans:     0.3s ease;
+
+  /* code colors */
+  --kw-c:  #569cd6;
+  --ty-c:  #4ec9b0;
+  --st-c:  #ce9178;
+  --nm-c:  #b5cea8;
+  --cm-c:  #6a9955;
+  --fn-c:  #dcdcaa;
+  --cl-c:  #4ec9b0;
+  --vr-c:  #9cdcfe;
+  --an-c:  #c586c0;
+  --op-c:  #d4d4d4;
+
+  /* info boxes */
+  --bl: #3498db; --bl-bg: #eaf4fd;
+  --gn: #27ae60; --gn-bg: #eafaf1;
+  --ye: #f39c12; --ye-bg: #fef9e7;
+  --or: #e67e22; --or-bg: #fdf2e9;
+  --pu: #8e44ad; --pu-bg: #f5eef8;
+}
+
+body.dark {
+  --bg:     #0f1117;
+  --bg2:    #161921;
+  --card:   #1a1d27;
+  --card2:  #1f2333;
+  --border: #2a2d3a;
+  --text:   #e8e4dc;
+  --text2:  #9a95a0;
+  --accent: #e74c3c;
+  --accent2:#f39c12;
+  --shadow: 0 2px 12px rgba(0,0,0,0.4);
+
+  --bl-bg: #0d2137; --gn-bg: #0d2818;
+  --ye-bg: #2a1f07; --or-bg: #2a1707;
+  --pu-bg: #1f0f2a;
+}
+
+/* ── RESET & BASE ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: background var(--trans), color var(--trans);
+  line-height: 1.7;
+}
+
+/* ── SIDEBAR ───────────────────────────────────────────────── */
+#sidebar {
+  position: fixed; top: 0; left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-tx);
+  overflow-y: auto;
+  z-index: 1000;
+  transform: translateX(0);
+  transition: transform var(--trans);
+  display: flex; flex-direction: column;
+}
+#sidebar.closed { transform: translateX(calc(-1 * var(--sidebar-w))); }
+
+.sb-header {
+  padding: 1.4rem 1.2rem 1rem;
+  border-bottom: 1px solid #2e2a22;
+  flex-shrink: 0;
+}
+.sb-course {
+  font-family: 'Fraunces', serif;
+  font-size: 1rem;
+  color: var(--sidebar-ac);
+  line-height: 1.3;
+  margin-bottom: 0.3rem;
+}
+.sb-sub { font-size: 0.72rem; color: #6b6560; text-transform: uppercase; letter-spacing: 0.08em; }
+
+.sb-prog-wrap { padding: 0.8rem 1.2rem; border-bottom: 1px solid #2e2a22; flex-shrink: 0; }
+.sb-prog-label { font-size: 0.7rem; color: #6b6560; margin-bottom: 0.4rem; }
+.sb-prog-bar { height: 4px; background: #2e2a22; border-radius: 2px; }
+.sb-prog-fill { height: 100%; background: var(--sidebar-ac); border-radius: 2px; width: 6.67%; transition: width 0.5s ease; }
+
+.sb-nav { padding: 0.8rem 0; flex: 1; }
+.sb-nav a {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.45rem 1.2rem;
+  font-size: 0.78rem;
+  color: #9a9088;
+  text-decoration: none;
+  transition: color 0.2s, background 0.2s;
+  border-left: 2px solid transparent;
+}
+.sb-nav a:hover { color: var(--sidebar-tx); background: rgba(255,255,255,0.04); }
+.sb-nav a.active { color: var(--sidebar-ac); border-left-color: var(--sidebar-ac); background: rgba(243,156,18,0.07); }
+.sb-nav .num {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #2a2620; font-size: 0.65rem; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; color: #6b6560;
+}
+.sb-nav a.active .num { background: var(--sidebar-ac); color: #1e1a14; }
+
+/* ── MAIN CONTENT ──────────────────────────────────────────── */
+#main {
+  margin-left: var(--sidebar-w);
+  transition: margin-left var(--trans);
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+#main.full { margin-left: 0; }
+
+.content-wrap { max-width: 860px; margin: 0 auto; padding: 2rem; }
+
+/* ── TOP BAR ───────────────────────────────────────────────── */
+#topbar {
+  position: sticky; top: 0; z-index: 900;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0.7rem 1.5rem;
+  display: flex; align-items: center; gap: 1rem;
+  transition: background var(--trans);
+}
+#hamburger {
+  background: none; border: none; cursor: pointer;
+  color: var(--text); font-size: 1.2rem; padding: 0.3rem;
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 6px;
+  transition: background 0.2s;
+}
+#hamburger:hover { background: var(--bg2); }
+.topbar-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1rem; font-weight: 700;
+  color: var(--text);
+}
+.topbar-right { margin-left: auto; display: flex; gap: 0.5rem; }
+#theme-btn {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.3rem 0.7rem;
+  cursor: pointer; font-size: 1rem;
+  transition: background 0.2s;
+}
+#theme-btn:hover { background: var(--card2); }
+
+/* ── SECTION STRUCTURE ─────────────────────────────────────── */
+.section { padding: 2.5rem 0; border-bottom: 1px solid var(--border); }
+.section:last-child { border-bottom: none; }
+
+.sec-lbl {
+  font-size: 0.68rem; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--accent2);
+  margin-bottom: 0.5rem;
+}
+.section h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 1.9rem; font-weight: 700;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+}
+.sub { margin-bottom: 2rem; }
+.sub h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 1.2rem; font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--border);
+}
+p { margin-bottom: 0.9rem; color: var(--text); }
+ul, ol { padding-left: 1.4rem; margin-bottom: 0.9rem; }
+li { margin-bottom: 0.35rem; color: var(--text); }
+
+/* ── INLINE CODE ───────────────────────────────────────────── */
+.ic {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82em;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.1em 0.45em;
+  color: var(--accent);
+}
+
+/* ── CODE BLOCK ────────────────────────────────────────────── */
+.cw {
+  background: #1e1e1e;
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 1.2rem 0;
+  box-shadow: var(--shadow);
+  border: 1px solid #333;
+}
+.cw-hd {
+  background: #2d2d2d;
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #3a3a3a;
+}
+.dots { display: flex; gap: 6px; }
+.dots span { width: 12px; height: 12px; border-radius: 50%; }
+.dots span:nth-child(1) { background: #ff5f56; }
+.dots span:nth-child(2) { background: #ffbd2e; }
+.dots span:nth-child(3) { background: #27c93f; }
+.cw-fn { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #858585; }
+.cw pre {
+  padding: 1.1rem 1.3rem;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.83rem;
+  line-height: 1.65;
+  color: #d4d4d4;
+  margin: 0;
+}
+.kw  { color: var(--kw-c); }
+.ty  { color: var(--ty-c); }
+.st  { color: var(--st-c); }
+.nm  { color: var(--nm-c); }
+.cm  { color: var(--cm-c); font-style: italic; }
+.fn2 { color: var(--fn-c); }
+.cl2 { color: var(--cl-c); }
+.vr  { color: var(--vr-c); }
+.an  { color: var(--an-c); }
+.op  { color: var(--op-c); }
+
+/* ── OUTPUT BOX ────────────────────────────────────────────── */
+.out {
+  background: #0a1a0a;
+  border: 1px solid #1a3a1a;
+  border-radius: var(--radius);
+  padding: 0.8rem 1.2rem;
+  margin: -0.3rem 0 1.2rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+}
+.out-lbl {
+  font-size: 0.65rem; text-transform: uppercase;
+  letter-spacing: 0.1em; color: #3a7a3a;
+  margin-bottom: 0.4rem;
+}
+.out-txt { color: #98c899; line-height: 1.6; }
+.out-err { color: #e06c75; }
+.out-dim { color: #4a6a4a; }
+
+/* ── INFO BOXES ────────────────────────────────────────────── */
+.bx-bl, .bx-gn, .bx-ye, .bx-or, .bx-pu {
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  margin: 1.2rem 0;
+  display: flex; gap: 0.8rem; align-items: flex-start;
+}
+.bx-bl { background: var(--bl-bg); border-left: 4px solid var(--bl); }
+.bx-gn { background: var(--gn-bg); border-left: 4px solid var(--gn); }
+.bx-ye { background: var(--ye-bg); border-left: 4px solid var(--ye); }
+.bx-or { background: var(--or-bg); border-left: 4px solid var(--or); }
+.bx-pu { background: var(--pu-bg); border-left: 4px solid var(--pu); }
+.bx-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.1rem; }
+.bx-body { flex: 1; }
+.bx-body strong { display: block; margin-bottom: 0.3rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.bx-body p { margin: 0; font-size: 0.9rem; }
+
+/* ── HIERARCHY BLOCK ───────────────────────────────────────── */
+.hier {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 1.2rem 0;
+  box-shadow: var(--shadow);
+}
+.hier-head {
+  background: var(--card2);
+  padding: 0.6rem 1.2rem;
+  font-size: 0.75rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text2); border-bottom: 1px solid var(--border);
+}
+.hier-body { padding: 1rem 1.2rem; }
+.hier-body pre {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem; line-height: 1.8;
+  overflow-x: auto; margin: 0;
+  color: var(--text);
+}
+.hi { color: var(--accent2); font-weight: 600; }
+.hc { color: #3498db; }
+.hn { color: var(--text2); font-style: italic; }
+.hr { color: var(--accent); }
+
+/* ── TABLE ─────────────────────────────────────────────────── */
+.tbl { overflow-x: auto; margin: 1.2rem 0; border-radius: var(--radius); box-shadow: var(--shadow); }
+.tbl table { width: 100%; border-collapse: collapse; }
+.tbl th {
+  background: var(--card2); padding: 0.7rem 1rem;
+  text-align: left; font-size: 0.8rem;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text2); border-bottom: 2px solid var(--border);
+}
+.tbl td {
+  padding: 0.65rem 1rem; font-size: 0.88rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tr:nth-child(even) td { background: var(--card2); }
+
+/* ── TIPS GRID ─────────────────────────────────────────────── */
+.tips { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.2rem 0; }
+@media(max-width:600px){ .tips { grid-template-columns: 1fr; } }
+.tip {
+  border-radius: var(--radius); padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
+}
+.tip.do  { background: var(--gn-bg); border-top: 3px solid var(--gn); }
+.tip.dn  { background: #fdf2f2; border-top: 3px solid #e74c3c; }
+body.dark .tip.dn { background: #2a0d0d; }
+.tip-lbl { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+.tip.do .tip-lbl { color: var(--gn); }
+.tip.dn .tip-lbl { color: #e74c3c; }
+.tip ul { margin: 0; padding-left: 1.2rem; }
+.tip li { font-size: 0.85rem; margin-bottom: 0.25rem; }
+
+/* ── FOOTER ────────────────────────────────────────────────── */
+#footer {
+  position: fixed; bottom: 0; left: var(--sidebar-w);
+  right: 0; background: var(--card);
+  border-top: 1px solid var(--border);
+  padding: 0.6rem 2rem;
+  display: flex; align-items: center; gap: 1.2rem;
+  z-index: 800; transition: left var(--trans), background var(--trans);
+}
+#footer.full { left: 0; }
+.ft-label { font-size: 0.75rem; color: var(--text2); white-space: nowrap; }
+.ft-bar { flex: 1; height: 6px; background: var(--bg2); border-radius: 3px; }
+.ft-fill { height: 100%; background: var(--prog-fill); border-radius: 3px; width: 6.67%; transition: width 0.5s ease; }
+.ft-pct { font-size: 0.75rem; font-weight: 600; color: var(--accent2); white-space: nowrap; }
+
+/* ── OVERLAY (mobile) ──────────────────────────────────────── */
+#overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 999;
+}
+@media(max-width:768px){
+  #main, #footer { margin-left: 0 !important; left: 0 !important; }
+  #sidebar { transform: translateX(calc(-1 * var(--sidebar-w))); }
+  #sidebar.open { transform: translateX(0); }
+  #overlay.show { display: block; }
+}
+
+/* ── PLACEHOLDER ───────────────────────────────────────────── */
+.placeholder {
+  background: var(--card);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 2rem; text-align: center;
+  color: var(--text2); margin: 1.5rem 0;
+}
+.placeholder strong { color: var(--accent2); font-family: 'Fraunces', serif; font-size: 1.1rem; }
+
+/* ── MISC ──────────────────────────────────────────────────── */
+strong { color: var(--text); }
+.highlight { background: var(--ye-bg); padding: 0.1em 0.3em; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- OVERLAY (mobile) -->
+<div id="overlay"></div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-course">Java Exception Handling</div>
+    <div class="sb-sub">Complete Study Notes</div>
+  </div>
+  <div class="sb-prog-wrap">
+    <div class="sb-prog-label">Progress: 1 of 15 sections</div>
+    <div class="sb-prog-bar"><div class="sb-prog-fill" id="sb-fill"></div></div>
+  </div>
+  <div class="sb-nav" id="sb-nav">
+    <a href="#s1" class="active"><span class="num">1</span> Types of Errors in Java</a>
+    <a href="#s2"><span class="num">2</span> What is an Exception?</a>
+    <a href="#s3"><span class="num">3</span> try-catch-finally</a>
+    <a href="#s4"><span class="num">4</span> Stack Trace & Exception Methods</a>
+    <a href="#s5"><span class="num">5</span> Multiple catch Blocks</a>
+    <a href="#s6"><span class="num">6</span> Multi-catch Block</a>
+    <a href="#s7"><span class="num">7</span> Nested try-catch</a>
+    <a href="#s8"><span class="num">8</span> Exception Hierarchy</a>
+    <a href="#s9"><span class="num">9</span> Checked vs. Unchecked</a>
+    <a href="#s10"><span class="num">10</span> Exception Propagation</a>
+    <a href="#s11"><span class="num">11</span> throws Keyword</a>
+    <a href="#s12"><span class="num">12</span> throw Keyword</a>
+    <a href="#s13"><span class="num">13</span> try-with-resources</a>
+    <a href="#s14"><span class="num">14</span> Custom Exceptions</a>
+    <a href="#s15"><span class="num">15</span> Exception Chaining</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="topbar">
+    <button id="hamburger" aria-label="Toggle sidebar">☰</button>
+    <span class="topbar-title">Java Exception Handling — Study Notes</span>
+    <div class="topbar-right">
+      <button id="theme-btn" title="Toggle theme">🌙</button>
+    </div>
+  </div>
+
+  <div class="content-wrap">
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 1 — Types of Errors in Java
+════════════════════════════════════════════════════════════════ -->
+<section class="section" id="s1">
+  <div class="sec-lbl">Section 01</div>
+  <h2>Types of Errors in Java</h2>
+
+  <div class="sub" id="s1-1">
+    <h3>The Three Types of Errors</h3>
+    <p>Before understanding exceptions, you must know that Java programs can fail in three fundamentally different ways. Each type has a different cause, different detection time, and a different fix strategy.</p>
+
+    <div class="tbl">
+      <table>
+        <tr><th>Error Type</th><th>When Detected</th><th>Whose Fault</th><th>Difficulty to Fix</th></tr>
+        <tr><td><strong>Syntax Error</strong></td><td>Compile time</td><td>Programmer</td><td>Easy — compiler points to it</td></tr>
+        <tr><td><strong>Logical Error</strong></td><td>Run time (wrong output)</td><td>Programmer</td><td>Hard — requires testing</td></tr>
+        <tr><td><strong>Runtime Error</strong></td><td>Run time (program crashes)</td><td>Environment / Input</td><td>Medium — must be handled</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="sub" id="s1-2">
+    <h3>1. Syntax Errors (Compile-time Errors)</h3>
+    <p>A syntax error means the code is grammatically wrong — Java cannot even understand it. Your IDE underlines it in red. The compiler will refuse to compile until it is fixed.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">SyntaxDemo.java</span></div>
+      <pre><span class="kw">public class</span> <span class="cl2">SyntaxDemo</span> {
+    <span class="kw">public static void</span> <span class="fn2">main</span>(<span class="ty">String</span>[] args) {
+        <span class="cm">// Missing semicolon — SYNTAX ERROR</span>
+        <span class="ty">System</span>.<span class="fn2">out</span>.<span class="fn2">println</span>(<span class="st">"Hello"</span>)   <span class="cm">// ❌ will NOT compile</span>
+
+        <span class="cm">// Capital P — SYNTAX ERROR (wrong method name)</span>
+        <span class="ty">System</span>.<span class="fn2">out</span>.<span class="fn2">Println</span>(<span class="st">"Hello"</span>);  <span class="cm">// ❌ cannot find symbol</span>
+    }
+}</pre>
+    </div>
+    <div class="out">
+      <div class="out-lbl">Compiler Output</div>
+      <div class="out-txt out-err">error: ';' expected
+error: cannot find symbol — Println</div>
+    </div>
+
+    <div class="bx-gn">
+      <div class="bx-icon">✅</div>
+      <div class="bx-body">
+        <strong>Why these are easy to fix</strong>
+        <p>The compiler tells you exactly which line is wrong. Your IDE highlights it in real time even before you compile. Just read the error message and fix the syntax.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub" id="s1-3">
+    <h3>2. Logical Errors (Bugs)</h3>
+    <p>A logical error means the code compiles and runs perfectly — but produces the <em>wrong answer</em>. You were asked to multiply, but you divided. You were asked to add, but you subtracted. The computer did exactly what you told it — the problem is what you told it.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">LogicalDemo.java</span></div>
+      <pre><span class="kw">public class</span> <span class="cl2">LogicalDemo</span> {
+    <span class="kw">static int</span> <span class="fn2">divide</span>(<span class="kw">int</span> a, <span class="kw">int</span> b) {
+        <span class="kw">return</span> a <span class="op">*</span> b;  <span class="cm">// ❌ should be a / b — LOGICAL ERROR</span>
+    }
+
+    <span class="kw">public static void</span> <span class="fn2">main</span>(<span class="ty">String</span>[] args) {
+        <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="fn2">divide</span>(<span class="nm">10</span>, <span class="nm">2</span>));  <span class="cm">// Prints 20, expected 5</span>
+    }
+}</pre>
+    </div>
+    <div class="out">
+      <div class="out-lbl">Output (wrong!)</div>
+      <div class="out-txt">20   <span class="out-dim">← expected 5, no error shown</span></div>
+    </div>
+
+    <div class="bx-or">
+      <div class="bx-icon">⚠️</div>
+      <div class="bx-body">
+        <strong>Why these are hardest to fix</strong>
+        <p>The program doesn't crash — it gives you a wrong answer silently. Finding logical errors requires thorough testing with many different inputs and careful comparison of expected vs actual output. These are called <strong>bugs</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub" id="s1-4">
+    <h3>3. Runtime Errors — Why They Matter Most</h3>
+    <p>A runtime error is the most dangerous kind. The code compiles fine, the logic is correct — but at some point <strong>during execution</strong>, something unexpected happens and the program crashes mid-run.</p>
+
+    <p><strong>Real-world analogy from the instructor:</strong> You built an application that opens a file from your C drive. It worked perfectly for months. One night you delete that file. Next morning the application crashes the moment it tries to open it — a runtime error.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">RuntimeDemo.java</span></div>
+      <pre><span class="kw">public class</span> <span class="cl2">RuntimeDemo</span> {
+    <span class="kw">public static void</span> <span class="fn2">main</span>(<span class="ty">String</span>[] args) {
+        <span class="kw">int</span>[] numerators   <span class="op">=</span> {<span class="nm">10</span>, <span class="nm">200</span>, <span class="nm">30</span>, <span class="nm">40</span>};
+        <span class="kw">int</span>[] denominators <span class="op">=</span> {<span class="nm">1</span>,   <span class="nm">2</span>,   <span class="nm">0</span>,  <span class="nm">4</span>};  <span class="cm">// 0 causes crash!</span>
+
+        <span class="kw">for</span> (<span class="kw">int</span> i <span class="op">=</span> <span class="nm">0</span>; i <span class="op">&lt;</span> numerators.<span class="vr">length</span>; i<span class="op">++</span>) {
+            <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(numerators[i] <span class="op">/</span> denominators[i]);
+        }
+        <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Good job! ✅"</span>);  <span class="cm">// Never reached!</span>
+    }
+}</pre>
+    </div>
+    <div class="out">
+      <div class="out-lbl">Output</div>
+      <div class="out-txt">10
+100
+<span class="out-err">Exception in thread "main" java.lang.ArithmeticException: / by zero
+    at RuntimeDemo.main(RuntimeDemo.java:6)</span>
+<span class="out-dim">← "Good job!" was never printed — program stopped!</span></div>
+    </div>
+
+    <div class="bx-bl">
+      <div class="bx-icon">💡</div>
+      <div class="bx-body">
+        <strong>Why runtime errors are dangerous</strong>
+        <p>The program stopped at <span class="ic">30 / 0</span> — the perfectly valid <span class="ic">40 / 4</span> never ran. In critical systems this is catastrophic: medical scanning machines, banking software, flight control systems. You cannot afford a mid-execution crash. This is why <strong>exception handling exists</strong> — not to prevent errors, but to keep your program running gracefully when they occur.</p>
+      </div>
+    </div>
+
+    <div class="tips">
+      <div class="tip do">
+        <div class="tip-lbl">✅ Do</div>
+        <ul>
+          <li>Test your code with extreme inputs (zero, null, empty)</li>
+          <li>Handle runtime errors so the program can continue</li>
+          <li>Use an IDE — it catches syntax errors in real time</li>
+          <li>Write unit tests to catch logical errors early</li>
+        </ul>
+      </div>
+      <div class="tip dn">
+        <div class="tip-lbl">❌ Don't</div>
+        <ul>
+          <li>Assume the environment will always be perfect</li>
+          <li>Ship code without testing edge cases</li>
+          <li>Ignore compiler warnings</li>
+          <li>Let a runtime error crash the entire application</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 2 — What is an Exception?
+════════════════════════════════════════════════════════════════ -->
+<section class="section" id="s2">
+  <div class="sec-lbl">Section 02</div>
+  <h2>What is an Exception?</h2>
+
+  <div class="sub" id="s2-1">
+    <h3>Formal Definition</h3>
+    <p>An <strong>exception</strong> is an event that disrupts the normal flow of the program. It is an <strong>object</strong> that is created and thrown by the JVM at runtime when something goes wrong.</p>
+
+    <div class="bx-pu">
+      <div class="bx-icon">📌</div>
+      <div class="bx-body">
+        <strong>Key Points to Remember</strong>
+        <p>• Exceptions are <strong>runtime errors</strong> — not compile-time.<br>
+        • An exception is an <strong>object</strong> (instance of a class like <span class="ic">ArithmeticException</span>).<br>
+        • When an exception occurs, JVM <strong>creates that object</strong> and <strong>throws</strong> it.<br>
+        • If nobody catches it, the program <strong>terminates abnormally</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub" id="s2-2">
+    <h3>How the JVM Creates an Exception Object</h3>
+    <p>When <span class="ic">30 / 0</span> happens, the JVM doesn't just display an error message — it actually <strong>creates an object</strong> of class <span class="ic">ArithmeticException</span>, fills it with details (message, stack trace), and throws it. This is why you can catch it with a variable like <span class="ic">e</span> — you are receiving that object.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">ExceptionObject.java</span></div>
+      <pre><span class="cm">// When JVM encounters divide-by-zero, it internally does something like:</span>
+<span class="kw">throw new</span> <span class="cl2">ArithmeticException</span>(<span class="st">"/ by zero"</span>);
+<span class="cm">// This object is what you receive in your catch block as 'e'</span>
+
+<span class="cm">// The object has these useful methods:</span>
+e.<span class="fn2">getMessage</span>()      <span class="cm">// → "/ by zero"</span>
+e.<span class="fn2">toString</span>()        <span class="cm">// → "java.lang.ArithmeticException: / by zero"</span>
+e.<span class="fn2">printStackTrace</span>() <span class="cm">// → full stack trace to console</span>
+e.<span class="fn2">getStackTrace</span>()   <span class="cm">// → array of StackTraceElement objects</span></pre>
+    </div>
+  </div>
+
+  <div class="sub" id="s2-3">
+    <h3>Exceptions vs. Errors — Quick Distinction</h3>
+    <p>Not everything that goes wrong is an exception in the Java sense. Java draws a clear line:</p>
+
+    <div class="tbl">
+      <table>
+        <tr><th>Category</th><th>Class</th><th>Can You Handle It?</th><th>Example</th></tr>
+        <tr><td><strong>Exception</strong></td><td><span class="ic">Exception</span></td><td>✅ Yes — use try-catch</td><td><span class="ic">ArithmeticException</span>, <span class="ic">IOException</span></td></tr>
+        <tr><td><strong>Error</strong></td><td><span class="ic">Error</span></td><td>❌ No — JVM handles it</td><td><span class="ic">OutOfMemoryError</span>, <span class="ic">StackOverflowError</span></td></tr>
+      </table>
+    </div>
+
+    <div class="bx-or">
+      <div class="bx-icon">⚠️</div>
+      <div class="bx-body">
+        <strong>Exceptions you handle. Errors you can't.</strong>
+        <p>If the JVM runs out of memory, there is nothing your code can do. These <span class="ic">Error</span> subclasses are catastrophic JVM-level failures. Focus your exception handling on <span class="ic">Exception</span> and its subclasses.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub" id="s2-4">
+    <h3>Why Exceptions Must Be Handled</h3>
+    <p>The instructor's analogy: Imagine you're in a game battle where winning earns you $1,000,000 — and suddenly the game crashes. Or imagine a patient inside a medical scanner when the software stops. These scenarios make it crystal clear: <strong>letting a runtime error terminate your application is unacceptable</strong> in any serious system.</p>
+
+    <p>Exception handling doesn't eliminate exceptions — it ensures the program <strong>keeps running gracefully</strong> even when they occur. The code that should have run after the exception still runs.</p>
+
+    <div class="bx-ye">
+      <div class="bx-icon">⭐</div>
+      <div class="bx-body">
+        <strong>Interview Tip</strong>
+        <p>"Exception handling is a mechanism to handle runtime errors so that the normal flow of the application can be maintained." — This is the standard definition. Know it word for word.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 3 — try-catch-finally
+════════════════════════════════════════════════════════════════ -->
+<section class="section" id="s3">
+  <div class="sec-lbl">Section 03</div>
+  <h2>try-catch-finally</h2>
+
+  <div class="sub" id="s3-1">
+    <h3>The Core Idea — Normal vs. Critical Statements</h3>
+    <p>The instructor's analogy: <em>"Imagine you're walking with a child in a mall. If the child runs away, you calmly walk after them — no panic. But if the same thing happens on a busy highway, you leap to grab the child immediately. The situation is critical."</em></p>
+    <p>In the same way, Java statements are either <strong>normal</strong> (nothing can really go wrong) or <strong>critical</strong> (an exception might occur). Critical statements go inside a <span class="ic">try</span> block.</p>
+  </div>
+
+  <div class="sub" id="s3-2">
+    <h3>The try Block</h3>
+    <p>You wrap risky/critical code inside a <span class="ic">try</span> block. You're telling Java: <em>"Try to execute this. If it works, great. If not, don't stop the program — go to the catch block."</em></p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">TryDemo.java</span></div>
+      <pre><span class="kw">int</span> i <span class="op">=</span> <span class="nm">0</span>;   <span class="cm">// normal statement — nothing can go wrong</span>
+<span class="kw">int</span> j <span class="op">=</span> <span class="nm">0</span>;   <span class="cm">// normal</span>
+
+<span class="kw">try</span> {
+    j <span class="op">=</span> <span class="nm">18</span> <span class="op">/</span> i;   <span class="cm">// CRITICAL — i could be 0!</span>
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Result: "</span> <span class="op">+</span> j);
+} <span class="kw">catch</span> (<span class="cl2">Exception</span> e) {
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Something went wrong: "</span> <span class="op">+</span> e);
+}
+<span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Bye!"</span>);  <span class="cm">// This ALWAYS runs now</span></pre>
+    </div>
+    <div class="out">
+      <div class="out-lbl">Output (when i = 0)</div>
+      <div class="out-txt">Something went wrong: java.lang.ArithmeticException: / by zero
+Bye!</div>
+    </div>
+    <div class="out">
+      <div class="out-lbl">Output (when i = 4)</div>
+      <div class="out-txt">Result: 4
+Bye!</div>
+    </div>
+  </div>
+
+  <div class="sub" id="s3-3">
+    <h3>The catch Block</h3>
+    <p>When an exception is thrown inside <span class="ic">try</span>, execution immediately jumps to <span class="ic">catch</span>. The exception object is passed to the catch parameter (<span class="ic">e</span> by convention). The catch block only executes <strong>if there is an exception</strong> — otherwise it is completely skipped.</p>
+
+    <div class="bx-bl">
+      <div class="bx-icon">💡</div>
+      <div class="bx-body">
+        <strong>The catch parameter is just a variable</strong>
+        <p>You can name it anything: <span class="ic">e</span>, <span class="ic">ex</span>, <span class="ic">obj</span>, <span class="ic">exception</span>. By convention, <span class="ic">e</span> is used. It holds a reference to the exception object that was thrown.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub" id="s3-4">
+    <h3>The finally Block</h3>
+    <p>The <span class="ic">finally</span> block <strong>ALWAYS runs</strong> — whether an exception occurred or not. It is primarily used for <strong>resource cleanup</strong>: closing files, database connections, network streams.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">FinallyDemo.java</span></div>
+      <pre><span class="kw">try</span> {
+    <span class="kw">int</span> result <span class="op">=</span> <span class="nm">10</span> <span class="op">/</span> <span class="nm">0</span>;   <span class="cm">// throws ArithmeticException</span>
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Result: "</span> <span class="op">+</span> result);
+} <span class="kw">catch</span> (<span class="cl2">Exception</span> e) {
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Exception caught: "</span> <span class="op">+</span> e.<span class="fn2">getMessage</span>());
+} <span class="kw">finally</span> {
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Finally block — ALWAYS runs!"</span>);
+    <span class="cm">// Close files, DB connections, streams here</span>
+}</pre>
+    </div>
+    <div class="out">
+      <div class="out-lbl">Output</div>
+      <div class="out-txt">Exception caught: / by zero
+Finally block — ALWAYS runs!</div>
+    </div>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">FinallyNoException.java</span></div>
+      <pre><span class="kw">try</span> {
+    <span class="kw">int</span> result <span class="op">=</span> <span class="nm">10</span> <span class="op">/</span> <span class="nm">2</span>;   <span class="cm">// no exception</span>
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Result: "</span> <span class="op">+</span> result);
+} <span class="kw">catch</span> (<span class="cl2">Exception</span> e) {
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"This won't run"</span>);
+} <span class="kw">finally</span> {
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Finally block — ALWAYS runs!"</span>);
+}</pre>
+    </div>
+    <div class="out">
+      <div class="out-lbl">Output</div>
+      <div class="out-txt">Result: 5
+Finally block — ALWAYS runs!</div>
+    </div>
+  </div>
+
+  <div class="sub" id="s3-5">
+    <h3>try-finally Without catch (Valid Syntax)</h3>
+    <p>You do not always need a <span class="ic">catch</span> block. If you only want to guarantee cleanup without handling the exception, <span class="ic">try-finally</span> alone is valid. The exception will still propagate upward — you just ensure the cleanup runs first.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">TryFinallyOnly.java</span></div>
+      <pre><span class="kw">try</span> {
+    <span class="cm">// risky code</span>
+    doSomethingRisky();
+} <span class="kw">finally</span> {
+    <span class="cm">// always closes, even if exception propagates up</span>
+    connection.<span class="fn2">close</span>();
+}
+<span class="cm">// Note: no catch block — exception still propagates to caller</span></pre>
+    </div>
+
+    <div class="bx-ye">
+      <div class="bx-icon">⭐</div>
+      <div class="bx-body">
+        <strong>Interview Tip — finally execution</strong>
+        <p><span class="ic">finally</span> runs even if there is a <span class="ic">return</span> statement inside <span class="ic">try</span> or <span class="ic">catch</span>. The only case where <span class="ic">finally</span> doesn't run is <span class="ic">System.exit()</span> being called or a JVM crash.</p>
+      </div>
+    </div>
+
+    <div class="tips">
+      <div class="tip do">
+        <div class="tip-lbl">✅ Do</div>
+        <ul>
+          <li>Put only critical/risky code inside <span class="ic">try</span></li>
+          <li>Use <span class="ic">finally</span> to close resources</li>
+          <li>Always handle or propagate exceptions</li>
+          <li>Print meaningful messages in catch</li>
+        </ul>
+      </div>
+      <div class="tip dn">
+        <div class="tip-lbl">❌ Don't</div>
+        <ul>
+          <li>Put all code inside <span class="ic">try</span> unnecessarily</li>
+          <li>Leave the catch block completely empty</li>
+          <li>Rely on try-catch to avoid fixing real bugs</li>
+          <li>Forget to close resources in finally</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 4 — Stack Trace & Exception Methods
+════════════════════════════════════════════════════════════════ -->
+<section class="section" id="s4">
+  <div class="sec-lbl">Section 04</div>
+  <h2>Stack Trace &amp; Exception Methods</h2>
+
+  <div class="sub" id="s4-1">
+    <h3>What is a Stack Trace?</h3>
+    <p>A stack trace is a <strong>snapshot of the call stack</strong> at the moment an exception occurred. It tells you exactly which method called which method, and on which line the exception happened. It reads from bottom (oldest call) to top (where the exception occurred).</p>
+
+    <div class="hier">
+      <div class="hier-head">Stack Trace Reading Guide</div>
+      <div class="hier-body">
+        <pre><span class="hr">Exception in thread "main" java.lang.ArithmeticException: / by zero</span>
+    at <span class="hc">LevelThree.methodC</span>(<span class="hn">LevelThree.java:5</span>)    <span class="hn">← exception happened HERE</span>
+    at <span class="hc">LevelTwo.methodB</span>(<span class="hn">LevelTwo.java:3</span>)      <span class="hn">← called by this</span>
+    at <span class="hc">LevelOne.methodA</span>(<span class="hn">LevelOne.java:3</span>)      <span class="hn">← called by this</span>
+    at <span class="hc">Main.main</span>(<span class="hn">Main.java:5</span>)               <span class="hn">← execution started here</span></pre>
+      </div>
+    </div>
+
+    <p>This trace shows: <span class="ic">main</span> called <span class="ic">methodA</span> → <span class="ic">methodA</span> called <span class="ic">methodB</span> → <span class="ic">methodB</span> called <span class="ic">methodC</span> → exception thrown in <span class="ic">methodC</span> on line 5.</p>
+  </div>
+
+  <div class="sub" id="s4-2">
+    <h3>Key Exception Methods</h3>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">ExceptionMethods.java</span></div>
+      <pre><span class="kw">try</span> {
+    <span class="kw">int</span> result <span class="op">=</span> <span class="nm">10</span> <span class="op">/</span> <span class="nm">0</span>;
+} <span class="kw">catch</span> (<span class="cl2">ArithmeticException</span> e) {
+
+    <span class="cm">// 1. getMessage() — returns just the message string</span>
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(e.<span class="fn2">getMessage</span>());
+    <span class="cm">// Output: / by zero</span>
+
+    <span class="cm">// 2. toString() — class name + message (called by println)</span>
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(e.<span class="fn2">toString</span>());
+    <span class="cm">// Output: java.lang.ArithmeticException: / by zero</span>
+
+    <span class="cm">// 3. printStackTrace() — full trace to stderr</span>
+    e.<span class="fn2">printStackTrace</span>();
+
+    <span class="cm">// 4. getStackTrace() — returns array you can loop over</span>
+    <span class="cl2">StackTraceElement</span>[] st <span class="op">=</span> e.<span class="fn2">getStackTrace</span>();
+    <span class="kw">for</span> (<span class="cl2">StackTraceElement</span> frame : st) {
+        <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(frame);
+    }
+}</pre>
+    </div>
+    <div class="out">
+      <div class="out-lbl">Output</div>
+      <div class="out-txt">/ by zero
+java.lang.ArithmeticException: / by zero
+<span class="out-err">java.lang.ArithmeticException: / by zero
+    at ExceptionMethods.main(ExceptionMethods.java:3)</span>
+ExceptionMethods.main(ExceptionMethods.java:3)</div>
+    </div>
+
+    <div class="bx-bl">
+      <div class="bx-icon">💡</div>
+      <div class="bx-body">
+        <strong>Why println(e) shows the full class name</strong>
+        <p>When you pass an object to <span class="ic">System.out.println()</span>, Java internally calls its <span class="ic">toString()</span> method. The <span class="ic">Throwable</span> class defines <span class="ic">toString()</span> to return <span class="ic">ClassName: message</span>. That's why printing <span class="ic">e</span> shows something like <span class="ic">java.lang.ArithmeticException: / by zero</span>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub" id="s4-3">
+    <h3>Where the Message Comes From</h3>
+    <p>When divide-by-zero happens, the JVM creates an <span class="ic">ArithmeticException</span> object and passes <span class="ic">"/ by zero"</span> as the message to its constructor. This message travels up through <span class="ic">RuntimeException</span> → <span class="ic">Exception</span> → <span class="ic">Throwable</span>, where it is stored in a field called <strong>detailMessage</strong>. The <span class="ic">toString()</span> method in <span class="ic">Throwable</span> then formats it as <span class="ic">ClassName: detailMessage</span>.</p>
+
+    <div class="tbl">
+      <table>
+        <tr><th>Method</th><th>Returns</th><th>Use Case</th></tr>
+        <tr><td><span class="ic">getMessage()</span></td><td>Just the message string</td><td>Display user-friendly error</td></tr>
+        <tr><td><span class="ic">toString()</span></td><td>ClassName: message</td><td>Quick debugging</td></tr>
+        <tr><td><span class="ic">printStackTrace()</span></td><td>Full trace to stderr</td><td>Debugging — finding root cause</td></tr>
+        <tr><td><span class="ic">getStackTrace()</span></td><td>Array of StackTraceElement</td><td>Programmatic trace processing</td></tr>
+        <tr><td><span class="ic">getCause()</span></td><td>The original exception</td><td>Exception chaining</td></tr>
+      </table>
+    </div>
+
+    <div class="bx-ye">
+      <div class="bx-icon">⭐</div>
+      <div class="bx-body">
+        <strong>Interview Tip</strong>
+        <p><span class="ic">printStackTrace()</span> is great for debugging but should NOT be used in production code. Use a proper logging framework (Log4j, SLF4J) instead. Interviewers look for this awareness.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 5 — Multiple catch Blocks
+════════════════════════════════════════════════════════════════ -->
+<section class="section" id="s5">
+  <div class="sec-lbl">Section 05</div>
+  <h2>Multiple catch Blocks</h2>
+
+  <div class="sub" id="s5-1">
+    <h3>Why One catch Is Not Enough</h3>
+    <p>A single <span class="ic">try</span> block can contain many statements. Different statements can throw different types of exceptions. If you use a single generic <span class="ic">catch(Exception e)</span>, you cannot provide specific messages or handling for each case.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">MultiCatchDemo.java</span></div>
+      <pre><span class="kw">int</span> i <span class="op">=</span> <span class="nm">0</span>;
+<span class="kw">int</span>[] nums <span class="op">=</span> <span class="kw">new int</span>[<span class="nm">5</span>];
+<span class="cl2">String</span> str <span class="op">=</span> <span class="kw">null</span>;
+
+<span class="kw">try</span> {
+    <span class="kw">int</span> j <span class="op">=</span> <span class="nm">18</span> <span class="op">/</span> i;           <span class="cm">// can throw ArithmeticException</span>
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(nums[<span class="nm">5</span>]);  <span class="cm">// can throw ArrayIndexOutOfBoundsException</span>
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(str.<span class="fn2">length</span>()); <span class="cm">// can throw NullPointerException</span>
+}
+<span class="kw">catch</span> (<span class="cl2">ArithmeticException</span> e) {
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Cannot divide by zero!"</span>);
+}
+<span class="kw">catch</span> (<span class="cl2">ArrayIndexOutOfBoundsException</span> e) {
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Stay within array limits!"</span>);
+}
+<span class="kw">catch</span> (<span class="cl2">NullPointerException</span> e) {
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Object is null!"</span>);
+}
+<span class="kw">catch</span> (<span class="cl2">Exception</span> e) {
+    <span class="cm">// Safety net — catches anything else not handled above</span>
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Something went wrong: "</span> <span class="op">+</span> e);
+}
+<span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Bye!"</span>);</pre>
+    </div>
+    <div class="out">
+      <div class="out-lbl">Output (when i = 0)</div>
+      <div class="out-txt">Cannot divide by zero!
+Bye!</div>
+    </div>
+    <div class="out">
+      <div class="out-lbl">Output (when i = 2)</div>
+      <div class="out-txt">Stay within array limits!
+Bye!</div>
+    </div>
+
+    <div class="bx-bl">
+      <div class="bx-icon">💡</div>
+      <div class="bx-body">
+        <strong>Execution jumps immediately</strong>
+        <p>The moment an exception occurs inside <span class="ic">try</span>, execution jumps to the matching <span class="ic">catch</span> block. The remaining statements inside <span class="ic">try</span> are skipped entirely. Only one <span class="ic">catch</span> block executes per exception.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub" id="s5-2">
+    <h3>The Golden Rule: Parent Class Must Come Last</h3>
+    <p>Since <span class="ic">Exception</span> is the parent of all exceptions, it can catch everything. If you place it first, Java will use it for every exception and the specific catch blocks below it become <strong>unreachable</strong> — a compile error.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">CatchOrder.java</span></div>
+      <pre><span class="cm">// ❌ WRONG — Exception is parent, placed first</span>
+<span class="kw">catch</span> (<span class="cl2">Exception</span> e) { ... }              <span class="cm">// catches everything</span>
+<span class="kw">catch</span> (<span class="cl2">ArithmeticException</span> e) { ... }   <span class="cm">// COMPILE ERROR: unreachable!</span>
+
+<span class="cm">// ✅ CORRECT — specific first, parent last</span>
+<span class="kw">catch</span> (<span class="cl2">ArithmeticException</span> e) { ... }   <span class="cm">// specific</span>
+<span class="kw">catch</span> (<span class="cl2">NullPointerException</span> e) { ... }  <span class="cm">// specific</span>
+<span class="kw">catch</span> (<span class="cl2">Exception</span> e) { ... }              <span class="cm">// safety net — always last</span></pre>
+    </div>
+
+    <div class="bx-ye">
+      <div class="bx-icon">⭐</div>
+      <div class="bx-body">
+        <strong>Interview Tip</strong>
+        <p>"In multiple catch blocks, the most specific exception class must come first and the most general (parent) class must come last. Placing a parent class before a child class causes a compile-time error: unreachable catch block."</p>
+      </div>
+    </div>
+
+    <div class="tips">
+      <div class="tip do">
+        <div class="tip-lbl">✅ Do</div>
+        <ul>
+          <li>Write specific catch blocks for each expected exception</li>
+          <li>Always put <span class="ic">Exception</span> as a final safety net</li>
+          <li>Give meaningful messages per exception type</li>
+        </ul>
+      </div>
+      <div class="tip dn">
+        <div class="tip-lbl">❌ Don't</div>
+        <ul>
+          <li>Put parent class catch block before child class</li>
+          <li>Use a single generic catch when you can be specific</li>
+          <li>Print the same message for every exception type</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 6 — Multi-catch Block (Java 7+)
+════════════════════════════════════════════════════════════════ -->
+<section class="section" id="s6">
+  <div class="sec-lbl">Section 06</div>
+  <h2>Multi-catch Block <span style="font-size:0.7em;color:var(--accent2);">(Java 7+)</span></h2>
+
+  <div class="sub" id="s6-1">
+    <h3>Catch Multiple Types in One Block</h3>
+    <p>Java 7 introduced the ability to catch multiple exception types in a single <span class="ic">catch</span> block using the pipe <span class="ic">|</span> operator. This reduces code duplication when you want to handle different exceptions the same way.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">MultiCatchSyntax.java</span></div>
+      <pre><span class="kw">try</span> {
+    <span class="cm">// code that might throw multiple exception types</span>
+    <span class="fn2">riskyMethod</span>();
+}
+<span class="cm">// Before Java 7 — repetitive:</span>
+<span class="kw">catch</span> (<span class="cl2">ArithmeticException</span> e)           { <span class="fn2">log</span>(e); <span class="kw">return</span> <span class="op">-</span><span class="nm">1</span>; }
+<span class="kw">catch</span> (<span class="cl2">NullPointerException</span> e)           { <span class="fn2">log</span>(e); <span class="kw">return</span> <span class="op">-</span><span class="nm">1</span>; }
+<span class="kw">catch</span> (<span class="cl2">ArrayIndexOutOfBoundsException</span> e) { <span class="fn2">log</span>(e); <span class="kw">return</span> <span class="op">-</span><span class="nm">1</span>; }
+
+<span class="cm">// Java 7+ — clean multi-catch:</span>
+<span class="kw">catch</span> (<span class="cl2">ArithmeticException</span> <span class="op">|</span> <span class="cl2">NullPointerException</span> <span class="op">|</span> <span class="cl2">ArrayIndexOutOfBoundsException</span> e) {
+    <span class="fn2">log</span>(e);
+    <span class="kw">return</span> <span class="op">-</span><span class="nm">1</span>;
+}</pre>
+    </div>
+  </div>
+
+  <div class="sub" id="s6-2">
+    <h3>The Disjoint Rule</h3>
+    <p>In a multi-catch block, the exception types must be <strong>disjoint</strong> — meaning no type can be a subclass of another type in the same multi-catch. If they overlap, the compiler will reject it because the more specific one would always be matched by the parent.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">DisjointRule.java</span></div>
+      <pre><span class="cm">// ❌ COMPILE ERROR — RuntimeException is parent of ArithmeticException</span>
+<span class="kw">catch</span> (<span class="cl2">RuntimeException</span> <span class="op">|</span> <span class="cl2">ArithmeticException</span> e) { }
+<span class="cm">// Error: Alternatives in a multi-catch statement cannot be related</span>
+
+<span class="cm">// ✅ CORRECT — all three are siblings (disjoint)</span>
+<span class="kw">catch</span> (<span class="cl2">ArithmeticException</span> <span class="op">|</span> <span class="cl2">NullPointerException</span> <span class="op">|</span> <span class="cl2">IOException</span> e) { }</pre>
+    </div>
+
+    <div class="bx-ye">
+      <div class="bx-icon">⭐</div>
+      <div class="bx-body">
+        <strong>Interview Tip</strong>
+        <p>In a multi-catch block, the variable <span class="ic">e</span> is implicitly <span class="ic">final</span> — you cannot reassign it inside the block. This is by design in Java 7+.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 7 — Nested try-catch
+════════════════════════════════════════════════════════════════ -->
+<section class="section" id="s7">
+  <div class="sec-lbl">Section 07</div>
+  <h2>Nested try-catch</h2>
+
+  <div class="sub" id="s7-1">
+    <h3>try Inside try</h3>
+    <p>Just like nested <span class="ic">if</span> statements or nested loops, you can place a <span class="ic">try-catch</span> block inside another <span class="ic">try</span> block. This is useful when different parts of your code need different levels of error handling.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">NestedTryCatch.java</span></div>
+      <pre><span class="kw">try</span> {
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Outer try — start"</span>);
+
+    <span class="kw">try</span> {
+        <span class="kw">int</span>[] arr <span class="op">=</span> <span class="kw">new int</span>[<span class="nm">5</span>];
+        arr[<span class="nm">10</span>] <span class="op">=</span> <span class="nm">99</span>;  <span class="cm">// ArrayIndexOutOfBoundsException</span>
+    } <span class="kw">catch</span> (<span class="cl2">ArrayIndexOutOfBoundsException</span> e) {
+        <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Inner catch: "</span> <span class="op">+</span> e.<span class="fn2">getMessage</span>());
+    }
+
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Outer try — continues after inner try"</span>);
+    <span class="kw">int</span> result <span class="op">=</span> <span class="nm">10</span> <span class="op">/</span> <span class="nm">0</span>;  <span class="cm">// ArithmeticException</span>
+
+} <span class="kw">catch</span> (<span class="cl2">ArithmeticException</span> e) {
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Outer catch: "</span> <span class="op">+</span> e.<span class="fn2">getMessage</span>());
+}</pre>
+    </div>
+    <div class="out">
+      <div class="out-lbl">Output</div>
+      <div class="out-txt">Outer try — start
+Inner catch: Index 10 out of bounds for length 5
+Outer try — continues after inner try
+Outer catch: / by zero</div>
+    </div>
+
+    <div class="bx-bl">
+      <div class="bx-icon">💡</div>
+      <div class="bx-body">
+        <strong>Key behaviour</strong>
+        <p>If the inner <span class="ic">catch</span> handles the exception, execution continues in the outer <span class="ic">try</span> block normally. If the inner <span class="ic">try</span> throws an exception that its inner <span class="ic">catch</span> cannot handle, it propagates to the outer <span class="ic">catch</span>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 8 — Exception Hierarchy
+════════════════════════════════════════════════════════════════ -->
+<section class="section" id="s8">
+  <div class="sec-lbl">Section 08</div>
+  <h2>Exception Hierarchy</h2>
+
+  <div class="sub" id="s8-1">
+    <h3>The Full Tree</h3>
+    <p>Java's exception system is built on a class hierarchy rooted at <span class="ic">Object</span>. Understanding this tree is essential — it determines which exceptions are related, which catch blocks can handle which exceptions, and which ones you are forced to handle.</p>
+
+    <div class="hier">
+      <div class="hier-head">Java Exception Hierarchy Tree</div>
+      <div class="hier-body">
+        <pre><span class="hi">Object</span>
+└── <span class="hi">Throwable</span>                     <span class="hn">← parent of everything throwable</span>
+    ├── <span class="hi">Error</span>                     <span class="hn">← JVM-level failures (do NOT handle)</span>
+    │   ├── <span class="hc">OutOfMemoryError</span>
+    │   ├── <span class="hc">StackOverflowError</span>
+    │   ├── <span class="hc">ThreadDeath</span>
+    │   └── <span class="hc">VirtualMachineError</span>
+    │
+    └── <span class="hi">Exception</span>                 <span class="hn">← handle these in your code</span>
+        ├── <span class="hi">RuntimeException</span>      <span class="hn">← Unchecked — optional to handle</span>
+        │   ├── <span class="hc">ArithmeticException</span>
+        │   ├── <span class="hc">NullPointerException</span>
+        │   ├── <span class="hc">ArrayIndexOutOfBoundsException</span>
+        │   ├── <span class="hc">ClassCastException</span>
+        │   └── <span class="hc">NumberFormatException</span>
+        │
+        ├── <span class="hc">IOException</span>           <span class="hn">← Checked — MUST handle or declare</span>
+        │   └── <span class="hc">FileNotFoundException</span>
+        ├── <span class="hc">SQLException</span>          <span class="hn">← Checked</span>
+        └── <span class="hc">ClassNotFoundException</span> <span class="hn">← Checked</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub" id="s8-2">
+    <h3>Throwable — The Root</h3>
+    <p><span class="ic">Throwable</span> is the superclass of both <span class="ic">Error</span> and <span class="ic">Exception</span>. It provides the core infrastructure: the <span class="ic">detailMessage</span> field, the <span class="ic">cause</span> field, and the methods <span class="ic">getMessage()</span>, <span class="ic">toString()</span>, <span class="ic">printStackTrace()</span>. Everything you throw in Java must be a <span class="ic">Throwable</span>.</p>
+
+    <div class="bx-or">
+      <div class="bx-icon">⚠️</div>
+      <div class="bx-body">
+        <strong>Throwable trivia</strong>
+        <p>Most Java class names ending in <span class="ic">-able</span> are interfaces (Runnable, Serializable, Cloneable). <span class="ic">Throwable</span> is a rare exception — it's a class, not an interface. Don't catch <span class="ic">Throwable</span> in production code; always catch <span class="ic">Exception</span> at the broadest level.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub" id="s8-3">
+    <h3>Error — Don't Touch It</h3>
+    <p><span class="ic">Error</span> represents catastrophic JVM-level failures. You cannot prevent or recover from them in code. If the JVM runs out of memory — what are you going to do inside your catch block? There's nothing left to run with.</p>
+
+    <div class="tbl">
+      <table>
+        <tr><th>Error Class</th><th>When It Happens</th></tr>
+        <tr><td><span class="ic">OutOfMemoryError</span></td><td>JVM cannot allocate more memory</td></tr>
+        <tr><td><span class="ic">StackOverflowError</span></td><td>Infinite recursion exhausts the call stack</td></tr>
+        <tr><td><span class="ic">ThreadDeath</span></td><td>A thread is killed by the JVM</td></tr>
+        <tr><td><span class="ic">VirtualMachineError</span></td><td>Internal JVM failure</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="sub" id="s8-4">
+    <h3>Using Hierarchy in catch Blocks</h3>
+    <p>Because of inheritance, a catch block for a parent class will catch all its child classes too. This is why <span class="ic">catch(Exception e)</span> catches everything — and why parent class must always be placed last in multiple catch blocks.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">HierarchyCatch.java</span></div>
+      <pre><span class="kw">try</span> {
+    <span class="kw">int</span> x <span class="op">=</span> <span class="nm">10</span> <span class="op">/</span> <span class="nm">0</span>;
+}
+<span class="cm">// All of these can catch ArithmeticException:</span>
+<span class="kw">catch</span> (<span class="cl2">ArithmeticException</span> e)  { } <span class="cm">// most specific ✅</span>
+<span class="kw">catch</span> (<span class="cl2">RuntimeException</span> e)     { } <span class="cm">// parent — also works</span>
+<span class="kw">catch</span> (<span class="cl2">Exception</span> e)            { } <span class="cm">// grandparent — also works</span>
+<span class="kw">catch</span> (<span class="cl2">Throwable</span> e)            { } <span class="cm">// root — avoid in practice</span></pre>
+    </div>
+
+    <div class="bx-ye">
+      <div class="bx-icon">⭐</div>
+      <div class="bx-body">
+        <strong>Interview Tip — Polymorphism in Exception Handling</strong>
+        <p>The reason a parent catch block catches child exceptions is <strong>polymorphism</strong>. An <span class="ic">ArithmeticException</span> IS-A <span class="ic">RuntimeException</span> IS-A <span class="ic">Exception</span> IS-A <span class="ic">Throwable</span>. This is a classic interview question connecting OOP concepts to exception handling.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 9 — Checked vs. Unchecked Exceptions
+════════════════════════════════════════════════════════════════ -->
+<section class="section" id="s9">
+  <div class="sec-lbl">Section 09</div>
+  <h2>Checked vs. Unchecked Exceptions</h2>
+
+  <div class="sub" id="s9-1">
+    <h3>The Core Distinction</h3>
+    <p>Java divides exceptions into two groups based on whether the compiler forces you to handle them or not.</p>
+
+    <div class="tbl">
+      <table>
+        <tr><th>Feature</th><th>Checked</th><th>Unchecked</th></tr>
+        <tr><td>Also called</td><td>Compile-time exceptions</td><td>Runtime exceptions</td></tr>
+        <tr><td>Parent class</td><td><span class="ic">Exception</span> (excluding RuntimeException)</td><td><span class="ic">RuntimeException</span></td></tr>
+        <tr><td>Compiler enforces?</td><td>✅ Yes — must handle or declare</td><td>❌ No — optional</td></tr>
+        <tr><td>Examples</td><td><span class="ic">IOException</span>, <span class="ic">SQLException</span>, <span class="ic">FileNotFoundException</span>, <span class="ic">ClassNotFoundException</span></td><td><span class="ic">NullPointerException</span>, <span class="ic">ArithmeticException</span>, <span class="ic">ArrayIndexOutOfBoundsException</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="sub" id="s9-2">
+    <h3>Unchecked Exceptions — Optional to Handle</h3>
+    <p>The compiler doesn't complain if you don't handle these. They are usually caused by programming mistakes (accessing null, dividing by zero, going out of array bounds). You <em>should</em> handle them, but Java doesn't force you.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">Unchecked.java</span></div>
+      <pre><span class="cm">// Compiler is FINE with this — no forced handling</span>
+<span class="kw">public static void</span> <span class="fn2">main</span>(<span class="ty">String</span>[] args) {
+    <span class="cl2">String</span> s <span class="op">=</span> <span class="kw">null</span>;
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(s.<span class="fn2">length</span>()); <span class="cm">// NullPointerException at runtime</span>
+    <span class="cm">// Compiles fine — crashes at runtime</span>
+}</pre>
+    </div>
+  </div>
+
+  <div class="sub" id="s9-3">
+    <h3>Checked Exceptions — Must Handle or Declare</h3>
+    <p>If a method call can throw a checked exception, the compiler <strong>will not let your code compile</strong> until you either handle it with <span class="ic">try-catch</span> or declare it with <span class="ic">throws</span>. This forces you to think about error handling for operations that commonly fail (file not found, network down, database unavailable).</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">CheckedDemo.java</span></div>
+      <pre><span class="cm">// FileReader throws FileNotFoundException — a CHECKED exception</span>
+<span class="cm">// ❌ This does NOT compile without handling:</span>
+<span class="cl2">FileReader</span> fr <span class="op">=</span> <span class="kw">new</span> <span class="cl2">FileReader</span>(<span class="st">"a.txt"</span>); <span class="cm">// Compile error!</span>
+
+<span class="cm">// ✅ Option 1: Handle with try-catch</span>
+<span class="kw">try</span> {
+    <span class="cl2">FileReader</span> fr <span class="op">=</span> <span class="kw">new</span> <span class="cl2">FileReader</span>(<span class="st">"a.txt"</span>);
+} <span class="kw">catch</span> (<span class="cl2">FileNotFoundException</span> e) {
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"File not found: "</span> <span class="op">+</span> e.<span class="fn2">getMessage</span>());
+}
+
+<span class="cm">// ✅ Option 2: Declare with throws (pass to caller)</span>
+<span class="kw">public void</span> <span class="fn2">readFile</span>() <span class="kw">throws</span> <span class="cl2">FileNotFoundException</span> {
+    <span class="cl2">FileReader</span> fr <span class="op">=</span> <span class="kw">new</span> <span class="cl2">FileReader</span>(<span class="st">"a.txt"</span>);
+}</pre>
+    </div>
+
+    <div class="bx-bl">
+      <div class="bx-icon">💡</div>
+      <div class="bx-body">
+        <strong>Why checked exceptions exist</strong>
+        <p>For operations where failure is <em>foreseeable and common</em> — reading a file that might not exist, connecting to a database that might be down — Java forces you to acknowledge the possibility of failure. This is a design decision to improve reliability.</p>
+      </div>
+    </div>
+
+    <div class="bx-ye">
+      <div class="bx-icon">⭐</div>
+      <div class="bx-body">
+        <strong>Interview Tip</strong>
+        <p>"Checked exceptions are checked at compile time. The compiler forces you to handle or declare them. Unchecked exceptions (RuntimeException subclasses) are not checked at compile time — they occur at runtime and are typically caused by programming errors." — This is a very common interview question.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 10 — Exception Propagation
+════════════════════════════════════════════════════════════════ -->
+<section class="section" id="s10">
+  <div class="sec-lbl">Section 10</div>
+  <h2>Exception Propagation</h2>
+
+  <div class="sub" id="s10-1">
+    <h3>How Exceptions Travel Up the Call Stack</h3>
+    <p>When an exception is thrown in a method and that method doesn't handle it, the exception <strong>propagates</strong> (travels up) to the method that called it. If that method doesn't handle it either, it keeps going up until it either finds a handler or reaches <span class="ic">main()</span> — at which point the JVM terminates the program.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">Propagation.java</span></div>
+      <pre><span class="kw">public class</span> <span class="cl2">Propagation</span> {
+
+    <span class="kw">static void</span> <span class="fn2">levelThree</span>() {
+        <span class="kw">int</span>[] arr <span class="op">=</span> <span class="kw">new int</span>[<span class="nm">5</span>];
+        arr[<span class="nm">10</span>] <span class="op">=</span> <span class="nm">99</span>;  <span class="cm">// Exception thrown HERE — not handled</span>
+    }
+
+    <span class="kw">static void</span> <span class="fn2">levelTwo</span>() {
+        <span class="fn2">levelThree</span>();   <span class="cm">// exception propagates here</span>
+    }
+
+    <span class="kw">static void</span> <span class="fn2">levelOne</span>() {
+        <span class="fn2">levelTwo</span>();     <span class="cm">// exception propagates here</span>
+    }
+
+    <span class="kw">public static void</span> <span class="fn2">main</span>(<span class="ty">String</span>[] args) {
+        <span class="kw">try</span> {
+            <span class="fn2">levelOne</span>();   <span class="cm">// exception propagates here — CAUGHT!</span>
+        } <span class="kw">catch</span> (<span class="cl2">ArrayIndexOutOfBoundsException</span> e) {
+            <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Caught in main: "</span> <span class="op">+</span> e.<span class="fn2">getMessage</span>());
+        }
+    }
+}</pre>
+    </div>
+    <div class="out">
+      <div class="out-lbl">Output</div>
+      <div class="out-txt">Caught in main: Index 10 out of bounds for length 5</div>
+    </div>
+
+    <div class="hier">
+      <div class="hier-head">Exception Propagation Flow</div>
+      <div class="hier-body">
+        <pre><span class="hi">main()</span>  ──calls──▶  <span class="hc">levelOne()</span>  ──calls──▶  <span class="hc">levelTwo()</span>  ──calls──▶  <span class="hc">levelThree()</span>
+  <span class="hr">▲</span>                    <span class="hr">▲</span>                   <span class="hr">▲</span>                   <span class="hr">💥 EXCEPTION</span>
+  <span class="hr">│</span>                    <span class="hr">│</span>                   <span class="hr">│</span>
+  <span class="hn">catches it ◀────────── propagates ◀──────── propagates ◀───────────────</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub" id="s10-2">
+    <h3>What Happens When Nobody Catches It</h3>
+    <p>If the exception reaches <span class="ic">main()</span> and still isn't handled, the JVM's default handler takes over: it prints the full stack trace to the console and <strong>terminates the program</strong>. Any code after the point of the exception is never executed.</p>
+
+    <div class="bx-or">
+      <div class="bx-icon">⚠️</div>
+      <div class="bx-body">
+        <strong>Unchecked exceptions propagate silently</strong>
+        <p>Unlike checked exceptions, unchecked exceptions (RuntimeException subclasses) don't need to be declared with <span class="ic">throws</span> as they propagate. They travel up the call stack invisibly until they either find a handler or crash the program.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 11 — throws Keyword
+════════════════════════════════════════════════════════════════ -->
+<section class="section" id="s11">
+  <div class="sec-lbl">Section 11</div>
+  <h2>throws Keyword — Ducking Exceptions</h2>
+
+  <div class="sub" id="s11-1">
+    <h3>What throws Does</h3>
+    <p>The <span class="ic">throws</span> keyword in a method signature is a <strong>warning label</strong>. It tells the caller: <em>"This method may throw this exception — you deal with it."</em> The method itself doesn't handle the exception — it <strong>delegates</strong> (ducks) responsibility to whoever calls it.</p>
+
+    <p>The instructor's analogy: <em>"Some employees never take responsibility. When something goes wrong, they say 'Talk to my manager.' The throws keyword is exactly that — 'I'm not handling this, talk to my caller.'"</em></p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">ThrowsDemo.java</span></div>
+      <pre><span class="kw">class</span> <span class="cl2">A</span> {
+    <span class="kw">public void</span> <span class="fn2">show</span>() <span class="kw">throws</span> <span class="cl2">ClassNotFoundException</span> {
+        <span class="cm">// Delegates — doesn't handle it itself</span>
+        <span class="cl2">Class</span>.<span class="fn2">forName</span>(<span class="st">"calc"</span>);  <span class="cm">// might throw ClassNotFoundException</span>
+    }
+}
+
+<span class="kw">public class</span> <span class="cl2">Main</span> {
+    <span class="kw">public static void</span> <span class="fn2">main</span>(<span class="ty">String</span>[] args) {
+        <span class="cl2">A</span> obj <span class="op">=</span> <span class="kw">new</span> <span class="cl2">A</span>();
+        <span class="kw">try</span> {
+            obj.<span class="fn2">show</span>();  <span class="cm">// caller handles it here</span>
+        } <span class="kw">catch</span> (<span class="cl2">ClassNotFoundException</span> e) {
+            <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Not able to find the class: "</span> <span class="op">+</span> e.<span class="fn2">getMessage</span>());
+        }
+    }
+}</pre>
+    </div>
+    <div class="out">
+      <div class="out-lbl">Output</div>
+      <div class="out-txt">Not able to find the class: calc</div>
+    </div>
+  </div>
+
+  <div class="sub" id="s11-2">
+    <h3>Chaining throws Up the Call Stack</h3>
+    <p>You can chain <span class="ic">throws</span> declarations across multiple methods. Each method passes responsibility up until someone actually handles it with <span class="ic">try-catch</span>.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">ThrowsChain.java</span></div>
+      <pre><span class="kw">static void</span> <span class="fn2">methodOne</span>() <span class="kw">throws</span> <span class="cl2">FileNotFoundException</span> {
+    <span class="kw">new</span> <span class="cl2">FileReader</span>(<span class="st">"a.txt"</span>);  <span class="cm">// doesn't handle it</span>
+}
+
+<span class="kw">static void</span> <span class="fn2">methodTwo</span>() <span class="kw">throws</span> <span class="cl2">FileNotFoundException</span> {
+    <span class="fn2">methodOne</span>();  <span class="cm">// passes it further up</span>
+}
+
+<span class="kw">public static void</span> <span class="fn2">main</span>(<span class="ty">String</span>[] args) {
+    <span class="kw">try</span> {
+        <span class="fn2">methodTwo</span>();  <span class="cm">// finally handled here</span>
+    } <span class="kw">catch</span> (<span class="cl2">FileNotFoundException</span> e) {
+        <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"File not found!"</span>);
+    }
+}</pre>
+    </div>
+  </div>
+
+  <div class="sub" id="s11-3">
+    <h3>Never throws from main()</h3>
+    <p>Technically you can write <span class="ic">public static void main(String[] args) throws Exception</span>. But this is a bad practice. If <span class="ic">main()</span> throws, the JVM receives the exception — and the JVM's only response is to print the stack trace and terminate the program. You have gained nothing from exception handling.</p>
+
+    <div class="bx-or">
+      <div class="bx-icon">⚠️</div>
+      <div class="bx-body">
+        <strong>Never throw from main to JVM</strong>
+        <p>If you propagate an exception all the way to <span class="ic">main()</span> without catching it, JVM handles it — which means program crash + stack trace dump. Always handle exceptions somewhere in the chain using <span class="ic">try-catch</span>.</p>
+      </div>
+    </div>
+
+    <div class="bx-ye">
+      <div class="bx-icon">⭐</div>
+      <div class="bx-body">
+        <strong>throws is only required for Checked Exceptions</strong>
+        <p>For unchecked exceptions (RuntimeException subclasses), adding <span class="ic">throws</span> to the method signature is optional and generally not done. For checked exceptions, it is mandatory if you are not handling them locally.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 12 — throw Keyword
+════════════════════════════════════════════════════════════════ -->
+<section class="section" id="s12">
+  <div class="sec-lbl">Section 12</div>
+  <h2>throw Keyword</h2>
+
+  <div class="sub" id="s12-1">
+    <h3>Manually Throwing an Exception</h3>
+    <p>The <span class="ic">throw</span> keyword lets you <strong>create and throw an exception object yourself</strong>. You are not waiting for the JVM to detect an error — you are proactively raising one based on your own business logic.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">ThrowDemo.java</span></div>
+      <pre><span class="kw">int</span> i <span class="op">=</span> <span class="nm">20</span>;
+<span class="kw">int</span> j <span class="op">=</span> <span class="nm">0</span>;
+
+<span class="kw">try</span> {
+    j <span class="op">=</span> <span class="nm">18</span> <span class="op">/</span> i;
+
+    <span class="cm">// Even though no JVM error, we don't want 0 as result</span>
+    <span class="kw">if</span> (j <span class="op">==</span> <span class="nm">0</span>) {
+        <span class="cm">// Manually throw an exception with a custom message</span>
+        <span class="kw">throw new</span> <span class="cl2">ArithmeticException</span>(<span class="st">"I don't want to print 0"</span>);
+    }
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Result: "</span> <span class="op">+</span> j);
+} <span class="kw">catch</span> (<span class="cl2">ArithmeticException</span> e) {
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Exception: "</span> <span class="op">+</span> e.<span class="fn2">getMessage</span>());
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Default result: 18"</span>);
+}</pre>
+    </div>
+    <div class="out">
+      <div class="out-lbl">Output</div>
+      <div class="out-txt">Exception: I don't want to print 0
+Default result: 18</div>
+    </div>
+  </div>
+
+  <div class="sub" id="s12-2">
+    <h3>Real-World Use Cases for throw</h3>
+    <p>The real power of <span class="ic">throw</span> is enforcing <strong>business rules</strong>. Consider a primary-backup database scenario: if connecting to the primary database fails, you want to automatically switch to the backup — not just show an error to the user.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">BusinessRule.java</span></div>
+      <pre><span class="kw">public</span> <span class="kw">static int</span> <span class="fn2">divide</span>(<span class="kw">int</span> a, <span class="kw">int</span> b) {
+    <span class="kw">if</span> (b <span class="op">==</span> <span class="nm">0</span>) {
+        <span class="kw">throw new</span> <span class="cl2">ArithmeticException</span>(<span class="st">"Denominator cannot be zero!"</span>);
+    }
+    <span class="kw">return</span> a <span class="op">/</span> b;
+}</pre>
+    </div>
+
+    <div class="bx-bl">
+      <div class="bx-icon">💡</div>
+      <div class="bx-body">
+        <strong>throw vs. throws — The Difference</strong>
+        <p><span class="ic">throw</span> (no s) is used <strong>inside a method body</strong> to actually throw an exception object. <span class="ic">throws</span> (with s) is used in a <strong>method signature</strong> to declare that the method might throw an exception. One executes — the other declares.</p>
+      </div>
+    </div>
+
+    <div class="tbl">
+      <table>
+        <tr><th>Feature</th><th>throw</th><th>throws</th></tr>
+        <tr><td>Location</td><td>Inside method body</td><td>Method signature</td></tr>
+        <tr><td>Purpose</td><td>Actually throws an exception</td><td>Declares a possible exception</td></tr>
+        <tr><td>Followed by</td><td>Exception object</td><td>Exception class name(s)</td></tr>
+        <tr><td>Multiple</td><td>One at a time</td><td>Can list multiple with commas</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 13 — try-with-resources
+════════════════════════════════════════════════════════════════ -->
+<section class="section" id="s13">
+  <div class="sec-lbl">Section 13</div>
+  <h2>try-with-resources <span style="font-size:0.7em;color:var(--accent2);">(Java 7+)</span></h2>
+
+  <div class="sub" id="s13-1">
+    <h3>The Problem: Forgetting to Close Resources</h3>
+    <p>Whenever you open a file, database connection, or network stream, you must close it when done. Forgetting wastes system resources. Even with <span class="ic">finally</span>, it's verbose and error-prone — especially when the close itself might throw an exception.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">OldWay.java</span></div>
+      <pre><span class="cm">// Old way — manual close in finally (verbose)</span>
+<span class="cl2">BufferedReader</span> br <span class="op">=</span> <span class="kw">null</span>;
+<span class="kw">try</span> {
+    br <span class="op">=</span> <span class="kw">new</span> <span class="cl2">BufferedReader</span>(<span class="kw">new</span> <span class="cl2">InputStreamReader</span>(<span class="ty">System</span>.<span class="vr">in</span>));
+    <span class="cl2">String</span> line <span class="op">=</span> br.<span class="fn2">readLine</span>();
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(line);
+} <span class="kw">catch</span> (<span class="cl2">IOException</span> e) {
+    e.<span class="fn2">printStackTrace</span>();
+} <span class="kw">finally</span> {
+    <span class="kw">if</span> (br <span class="op">!=</span> <span class="kw">null</span>) {
+        <span class="kw">try</span> { br.<span class="fn2">close</span>(); }              <span class="cm">// close itself can throw!</span>
+        <span class="kw">catch</span> (<span class="cl2">IOException</span> e) { }
+    }
+}</pre>
+    </div>
+  </div>
+
+  <div class="sub" id="s13-2">
+    <h3>The Solution: try-with-resources</h3>
+    <p>Declare the resource inside the parentheses of <span class="ic">try</span>. Java will <strong>automatically close</strong> the resource when the try block completes — whether it completed normally or with an exception. No <span class="ic">finally</span> needed.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">TryWithResources.java</span></div>
+      <pre><span class="cm">// New way — auto-close, clean syntax</span>
+<span class="kw">try</span> (<span class="cl2">BufferedReader</span> br <span class="op">=</span> <span class="kw">new</span> <span class="cl2">BufferedReader</span>(<span class="kw">new</span> <span class="cl2">InputStreamReader</span>(<span class="ty">System</span>.<span class="vr">in</span>))) {
+    <span class="cl2">String</span> line <span class="op">=</span> br.<span class="fn2">readLine</span>();
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"You typed: "</span> <span class="op">+</span> line);
+} <span class="kw">catch</span> (<span class="cl2">IOException</span> e) {
+    e.<span class="fn2">printStackTrace</span>();
+}
+<span class="cm">// br is automatically closed here — no finally needed!</span>
+
+<span class="cm">// Multiple resources — both auto-closed:</span>
+<span class="kw">try</span> (<span class="cl2">FileReader</span> fr <span class="op">=</span> <span class="kw">new</span> <span class="cl2">FileReader</span>(<span class="st">"in.txt"</span>);
+     <span class="cl2">FileWriter</span> fw <span class="op">=</span> <span class="kw">new</span> <span class="cl2">FileWriter</span>(<span class="st">"out.txt"</span>)) {
+    <span class="cm">// use fr and fw</span>
+} <span class="kw">catch</span> (<span class="cl2">IOException</span> e) { ... }
+<span class="cm">// both fr and fw closed automatically</span></pre>
+    </div>
+  </div>
+
+  <div class="sub" id="s13-3">
+    <h3>The AutoCloseable Interface</h3>
+    <p>This works because <span class="ic">BufferedReader</span> implements <span class="ic">AutoCloseable</span>. Any class that implements <span class="ic">AutoCloseable</span> (which provides a <span class="ic">close()</span> method) can be used in try-with-resources. Java calls <span class="ic">close()</span> automatically when the block exits.</p>
+
+    <div class="hier">
+      <div class="hier-head">AutoCloseable Inheritance Chain</div>
+      <div class="hier-body">
+        <pre><span class="hi">AutoCloseable</span>   <span class="hn">← interface with close() method</span>
+└── <span class="hi">Closeable</span>   <span class="hn">← extends AutoCloseable</span>
+    └── <span class="hc">Reader</span>
+        └── <span class="hc">BufferedReader</span>  <span class="hn">← implements AutoCloseable ✅</span>
+
+<span class="hn">Other AutoCloseable implementors:</span>
+<span class="hc">InputStream</span>, <span class="hc">OutputStream</span>, <span class="hc">FileReader</span>, <span class="hc">FileWriter</span>,
+<span class="hc">Connection</span> (JDBC), <span class="hc">PreparedStatement</span>, <span class="hc">ResultSet</span></pre>
+      </div>
+    </div>
+
+    <div class="bx-ye">
+      <div class="bx-icon">⭐</div>
+      <div class="bx-body">
+        <strong>Interview Tip</strong>
+        <p>try-with-resources was introduced in <strong>Java 7</strong>. Resources are closed in <strong>reverse order</strong> of declaration (LIFO). The <span class="ic">close()</span> is called even if an exception is thrown inside the try block. This is a common Java 7 features interview question.</p>
+      </div>
+    </div>
+
+    <div class="tips">
+      <div class="tip do">
+        <div class="tip-lbl">✅ Do</div>
+        <ul>
+          <li>Use try-with-resources for files, DB connections, streams</li>
+          <li>Implement <span class="ic">AutoCloseable</span> in your own resource classes</li>
+          <li>Prefer this over try-finally for resource cleanup</li>
+        </ul>
+      </div>
+      <div class="tip dn">
+        <div class="tip-lbl">❌ Don't</div>
+        <ul>
+          <li>Forget to close resources (memory/connection leaks)</li>
+          <li>Declare resources outside the try() parentheses</li>
+          <li>Use try-with-resources for non-AutoCloseable objects</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 14 — Custom Exceptions
+════════════════════════════════════════════════════════════════ -->
+<section class="section" id="s14">
+  <div class="sec-lbl">Section 14</div>
+  <h2>Custom Exceptions</h2>
+
+  <div class="sub" id="s14-1">
+    <h3>Why Create Your Own Exception?</h3>
+    <p>Java's built-in exceptions are generic. In a real application — banking, e-commerce, healthcare — you need exceptions that carry your business vocabulary. <span class="ic">InsufficientFundsException</span> is far more meaningful in logs than a plain <span class="ic">Exception</span>. You can filter, search, and act on it specifically.</p>
+
+    <div class="bx-bl">
+      <div class="bx-icon">💡</div>
+      <div class="bx-body">
+        <strong>The Two Rules for Custom Exceptions</strong>
+        <p>1. Create a class that <strong>extends</strong> <span class="ic">Exception</span> (checked) or <span class="ic">RuntimeException</span> (unchecked).<br>
+        2. Call <span class="ic">super(message)</span> in the constructor to pass the message to the parent class so <span class="ic">getMessage()</span> and <span class="ic">toString()</span> work correctly.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub" id="s14-2">
+    <h3>Creating a Custom Checked Exception</h3>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">InsufficientFundsException.java</span></div>
+      <pre><span class="cm">// Step 1: Create the custom exception class</span>
+<span class="kw">public class</span> <span class="cl2">InsufficientFundsException</span> <span class="kw">extends</span> <span class="cl2">Exception</span> {
+
+    <span class="kw">private double</span> amount;  <span class="cm">// custom field</span>
+
+    <span class="kw">public</span> <span class="fn2">InsufficientFundsException</span>(<span class="ty">String</span> message, <span class="kw">double</span> amount) {
+        <span class="kw">super</span>(message);  <span class="cm">// passes message to Exception → Throwable</span>
+        <span class="kw">this</span>.amount <span class="op">=</span> amount;
+    }
+
+    <span class="kw">public double</span> <span class="fn2">getAmount</span>() { <span class="kw">return</span> amount; }  <span class="cm">// custom getter</span>
+}</pre>
+    </div>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">BankAccount.java</span></div>
+      <pre><span class="kw">public class</span> <span class="cl2">BankAccount</span> {
+    <span class="kw">private double</span> balance;
+
+    <span class="kw">public</span> <span class="fn2">BankAccount</span>(<span class="kw">double</span> balance) { <span class="kw">this</span>.balance <span class="op">=</span> balance; }
+
+    <span class="kw">public void</span> <span class="fn2">withdraw</span>(<span class="kw">double</span> amount) <span class="kw">throws</span> <span class="cl2">InsufficientFundsException</span> {
+        <span class="kw">if</span> (amount <span class="op">&gt;</span> balance) {
+            <span class="kw">throw new</span> <span class="cl2">InsufficientFundsException</span>(
+                <span class="st">"You don't have enough money"</span>, amount
+            );
+        }
+        balance <span class="op">-=</span> amount;
+    }
+}</pre>
+    </div>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">BankTest.java</span></div>
+      <pre><span class="cl2">BankAccount</span> account <span class="op">=</span> <span class="kw">new</span> <span class="cl2">BankAccount</span>(<span class="nm">100.0</span>);
+<span class="kw">try</span> {
+    account.<span class="fn2">withdraw</span>(<span class="nm">500.0</span>);  <span class="cm">// more than balance!</span>
+} <span class="kw">catch</span> (<span class="cl2">InsufficientFundsException</span> e) {
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(e.<span class="fn2">getMessage</span>());
+    <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Attempted: "</span> <span class="op">+</span> e.<span class="fn2">getAmount</span>());
+}</pre>
+    </div>
+    <div class="out">
+      <div class="out-lbl">Output</div>
+      <div class="out-txt">You don't have enough money
+Attempted: 500.0</div>
+    </div>
+  </div>
+
+  <div class="sub" id="s14-3">
+    <h3>Checked vs. Unchecked Custom Exceptions</h3>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">CustomExceptionTypes.java</span></div>
+      <pre><span class="cm">// Checked custom exception — caller MUST handle or declare</span>
+<span class="kw">public class</span> <span class="cl2">InsufficientFundsException</span> <span class="kw">extends</span> <span class="cl2">Exception</span> {
+    <span class="kw">public</span> <span class="fn2">InsufficientFundsException</span>(<span class="ty">String</span> msg) { <span class="kw">super</span>(msg); }
+}
+
+<span class="cm">// Unchecked custom exception — caller can ignore it</span>
+<span class="kw">public class</span> <span class="cl2">InvalidAgeException</span> <span class="kw">extends</span> <span class="cl2">RuntimeException</span> {
+    <span class="kw">public</span> <span class="fn2">InvalidAgeException</span>(<span class="ty">String</span> msg) { <span class="kw">super</span>(msg); }
+}</pre>
+    </div>
+
+    <div class="bx-pu">
+      <div class="bx-icon">📌</div>
+      <div class="bx-body">
+        <strong>Why super(message) matters</strong>
+        <p>The message you pass to <span class="ic">super()</span> travels up to <span class="ic">Throwable</span>'s <span class="ic">detailMessage</span> field. This is what <span class="ic">getMessage()</span> returns and what <span class="ic">toString()</span> uses. Without calling <span class="ic">super(message)</span>, your exception will print with no message.</p>
+      </div>
+    </div>
+
+    <div class="bx-ye">
+      <div class="bx-icon">⭐</div>
+      <div class="bx-body">
+        <strong>Interview Tip — Best Practice in Spring/Production</strong>
+        <p>In Spring Boot and production Java, custom exceptions extending <span class="ic">RuntimeException</span> are preferred (unchecked). This avoids polluting every method signature with <span class="ic">throws</span>. Common pattern: <span class="ic">ResourceNotFoundException</span>, <span class="ic">ValidationException</span>, <span class="ic">UnauthorizedException</span>.</p>
+      </div>
+    </div>
+
+    <div class="tips">
+      <div class="tip do">
+        <div class="tip-lbl">✅ Do</div>
+        <ul>
+          <li>Use business-meaningful names (<span class="ic">InsufficientFundsException</span>)</li>
+          <li>Always call <span class="ic">super(message)</span> in constructor</li>
+          <li>Add custom fields for more context (<span class="ic">amount</span>, <span class="ic">userId</span>)</li>
+          <li>Use unchecked for Spring/REST APIs</li>
+        </ul>
+      </div>
+      <div class="tip dn">
+        <div class="tip-lbl">❌ Don't</div>
+        <ul>
+          <li>Name your exception just <span class="ic">MyException</span></li>
+          <li>Forget to call <span class="ic">super(message)</span></li>
+          <li>Extend <span class="ic">Throwable</span> directly</li>
+          <li>Create exceptions for every trivial case</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 15 — Exception Chaining
+════════════════════════════════════════════════════════════════ -->
+<section class="section" id="s15">
+  <div class="sec-lbl">Section 15</div>
+  <h2>Exception Chaining</h2>
+
+  <div class="sub" id="s15-1">
+    <h3>The Problem: Losing the Root Cause</h3>
+    <p>When you catch an exception and throw a different one, you can lose the original cause. A developer debugging the issue only sees the new exception — they have no idea what actually triggered it. Exception chaining solves this by <strong>wrapping the original exception inside the new one</strong>.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">WithoutChaining.java</span></div>
+      <pre><span class="cm">// ❌ Root cause lost — bad practice</span>
+<span class="kw">try</span> {
+    connectToDatabase();
+} <span class="kw">catch</span> (<span class="cl2">SQLException</span> e) {
+    <span class="cm">// Original SQLException swallowed! Nobody knows what went wrong.</span>
+    <span class="kw">throw new</span> <span class="cl2">RuntimeException</span>(<span class="st">"Database connection failed"</span>);
+}</pre>
+    </div>
+  </div>
+
+  <div class="sub" id="s15-2">
+    <h3>The Solution: Wrap with the Cause</h3>
+    <p>Pass the original exception as the second argument to the new exception's constructor. This preserves the full chain of causes so debuggers can trace the error back to its origin.</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">ExceptionChaining.java</span></div>
+      <pre><span class="kw">public static void</span> <span class="fn2">connectToDatabase</span>() <span class="kw">throws</span> <span class="cl2">SQLException</span> {
+    <span class="kw">throw new</span> <span class="cl2">SQLException</span>(<span class="st">"Connection refused on port 5432"</span>);
+}
+
+<span class="kw">public static void</span> <span class="fn2">loadData</span>() {
+    <span class="kw">try</span> {
+        <span class="fn2">connectToDatabase</span>();
+    } <span class="kw">catch</span> (<span class="cl2">SQLException</span> e) {
+        <span class="cm">// ✅ Wrap original exception — root cause preserved</span>
+        <span class="kw">throw new</span> <span class="cl2">RuntimeException</span>(<span class="st">"Failed to load data"</span>, e);
+        <span class="cm">//                                                   ↑ original cause</span>
+    }
+}
+
+<span class="kw">public static void</span> <span class="fn2">main</span>(<span class="ty">String</span>[] args) {
+    <span class="kw">try</span> {
+        <span class="fn2">loadData</span>();
+    } <span class="kw">catch</span> (<span class="cl2">RuntimeException</span> e) {
+        <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Message:    "</span> <span class="op">+</span> e.<span class="fn2">getMessage</span>());
+        <span class="ty">System</span>.<span class="vr">out</span>.<span class="fn2">println</span>(<span class="st">"Root cause: "</span> <span class="op">+</span> e.<span class="fn2">getCause</span>().<span class="fn2">getMessage</span>());
+        e.<span class="fn2">printStackTrace</span>();
+    }
+}</pre>
+    </div>
+    <div class="out">
+      <div class="out-lbl">Output</div>
+      <div class="out-txt">Message:    Failed to load data
+Root cause: Connection refused on port 5432
+<span class="out-err">java.lang.RuntimeException: Failed to load data
+    at Main.loadData(Main.java:9)
+    at Main.main(Main.java:15)
+Caused by: java.sql.SQLException: Connection refused on port 5432
+    at Main.connectToDatabase(Main.java:2)</span></div>
+    </div>
+  </div>
+
+  <div class="sub" id="s15-3">
+    <h3>getCause() and initCause()</h3>
+    <p>Two ways to set/get the chained cause:</p>
+
+    <div class="cw">
+      <div class="cw-hd"><div class="dots"><span></span><span></span><span></span></div><span class="cw-fn">CauseAPI.java</span></div>
+      <pre><span class="cm">// Method 1: Pass cause in constructor (preferred)</span>
+<span class="kw">throw new</span> <span class="cl2">RuntimeException</span>(<span class="st">"High level message"</span>, originalException);
+
+<span class="cm">// Method 2: initCause() — set cause after construction</span>
+<span class="cl2">RuntimeException</span> newEx <span class="op">=</span> <span class="kw">new</span> <span class="cl2">RuntimeException</span>(<span class="st">"High level message"</span>);
+newEx.<span class="fn2">initCause</span>(originalException);
+<span class="kw">throw</span> newEx;
+
+<span class="cm">// Retrieve the cause</span>
+<span class="cl2">Throwable</span> cause <span class="op">=</span> e.<span class="fn2">getCause</span>();  <span class="cm">// returns the wrapped exception</span></pre>
+    </div>
+
+    <div class="tbl">
+      <table>
+        <tr><th>Method</th><th>Description</th></tr>
+        <tr><td><span class="ic">getCause()</span></td><td>Returns the wrapped (original) exception, or null if none</td></tr>
+        <tr><td><span class="ic">initCause(Throwable)</span></td><td>Sets the cause (can only be called once)</td></tr>
+        <tr><td><span class="ic">"Caused by:"</span> in stack trace</td><td>Printed automatically when a cause is present</td></tr>
+      </table>
+    </div>
+
+    <div class="bx-ye">
+      <div class="bx-icon">⭐</div>
+      <div class="bx-body">
+        <strong>Interview Tip</strong>
+        <p>Exception chaining is essential for <strong>abstraction</strong> in layered architectures. A service layer shouldn't expose <span class="ic">SQLException</span> to the controller — it wraps it in a <span class="ic">ServiceException</span>. But the original <span class="ic">SQLException</span> should be preserved as the cause for debugging. Always wrap, never swallow.</p>
+      </div>
+    </div>
+
+    <div class="tips">
+      <div class="tip do">
+        <div class="tip-lbl">✅ Do</div>
+        <ul>
+          <li>Always pass the original exception as the cause</li>
+          <li>Use <span class="ic">getCause()</span> when debugging wrapped exceptions</li>
+          <li>Check for <span class="ic">"Caused by:"</span> in stack traces</li>
+          <li>Wrap low-level exceptions in high-level ones in layered apps</li>
+        </ul>
+      </div>
+      <div class="tip dn">
+        <div class="tip-lbl">❌ Don't</div>
+        <ul>
+          <li>Swallow exceptions silently in empty catch blocks</li>
+          <li>Re-throw without the original cause</li>
+          <li>Log and throw both (pick one or chain properly)</li>
+          <li>Expose low-level exceptions (SQLException) to upper layers</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+  </div><!-- /content-wrap -->
+</div><!-- /main -->
+
+<!-- FOOTER -->
+<div id="footer">
+  <span class="ft-label">15 / 15 sections</span>
+  <div class="ft-bar"><div class="ft-fill" id="ft-fill" style="width:100%"></div></div>
+  <span class="ft-pct" id="ft-pct">100%</span>
+</div>
+
+<script>
+// ── SIDEBAR TOGGLE ───────────────────────────────────────────
+const sidebar  = document.getElementById('sidebar');
+const main     = document.getElementById('main');
+const footer   = document.getElementById('footer');
+const hamburger= document.getElementById('hamburger');
+const overlay  = document.getElementById('overlay');
+const isMobile = () => window.innerWidth <= 768;
+
+hamburger.addEventListener('click', () => {
+  if (isMobile()) {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('show');
+    hamburger.textContent = sidebar.classList.contains('open') ? '✕' : '☰';
+  } else {
+    sidebar.classList.toggle('closed');
+    main.classList.toggle('full');
+    footer.classList.toggle('full');
+    hamburger.textContent = sidebar.classList.contains('closed') ? '☰' : '✕';
+  }
+});
+
+overlay.addEventListener('click', () => {
+  sidebar.classList.remove('open');
+  overlay.classList.remove('show');
+  hamburger.textContent = '☰';
+});
+
+// ── THEME TOGGLE ─────────────────────────────────────────────
+const themeBtn = document.getElementById('theme-btn');
+themeBtn.addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  themeBtn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+});
+
+// ── ACTIVE SECTION HIGHLIGHTING ──────────────────────────────
+const sections = document.querySelectorAll('.section');
+const navLinks = document.querySelectorAll('.sb-nav a');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navLinks.forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+      });
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+sections.forEach(s => observer.observe(s));
+
+// ── PROGRESS ─────────────────────────────────────────────────
+// All 15 sections complete
+document.getElementById('sb-fill').style.width = '100%';
+document.querySelector('.sb-prog-label').textContent = 'Progress: 15 of 15 sections';
+</script>
+</body>
+</html>
