@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java 8 Streams &amp; Functional Programming</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:#30363d;--blue:#58a6ff;--green:#3fb950;--purple:#d2a8ff;--orange:#f78166;--yellow:#e3b341;--muted:#8b949e;--text:#e6edf3;--text2:#c9d1d9}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.7}
+.hero{position:relative;overflow:hidden;background:radial-gradient(ellipse 80% 60% at 50% 0%,#1a2332 0%,var(--bg) 70%);padding:80px 40px 60px;text-align:center;border-bottom:1px solid var(--border)}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle 600px at 50% -100px,rgba(88,166,255,.12) 0%,transparent 70%);pointer-events:none}
+.badge{display:inline-block;background:rgba(88,166,255,.12);border:1px solid rgba(88,166,255,.3);border-radius:20px;padding:4px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--blue);letter-spacing:.05em;margin-bottom:20px}
+.hero-title{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,3.4rem);font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#e6edf3 0%,#58a6ff 45%,#d2a8ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;margin-bottom:16px}
+.hero-sub{color:var(--muted);font-size:16px;max-width:600px;margin:0 auto;line-height:1.6}
+.page{max-width:980px;margin:0 auto;padding:40px 24px 80px}
+.toc{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:28px 32px;margin-bottom:48px}
+.toc-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:16px}
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:4px}
+.toc a{display:block;padding:6px 10px;border-radius:6px;color:var(--text2);text-decoration:none;font-size:14px;transition:background .15s,color .15s}
+.toc a:hover{background:var(--bg3);color:var(--blue)}
+.toc a span{color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:12px;margin-right:8px}
+.section{margin-bottom:56px}
+.sec-header{display:flex;align-items:center;gap:14px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 22px;margin-bottom:28px}
+.sec-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;background:var(--blue);color:#0d1117;border-radius:6px;padding:3px 10px;white-space:nowrap;flex-shrink:0}
+.sec-num.green{background:var(--green)}.sec-num.purple{background:var(--purple)}.sec-num.orange{background:var(--orange)}.sec-num.yellow{background:var(--yellow);color:#1a1a0a}
+.sec-title{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:700;color:var(--text)}
+.sub{font-family:'Syne',sans-serif;font-size:1rem;font-weight:600;color:var(--blue);margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid rgba(88,166,255,.2)}
+p{color:var(--text2);margin-bottom:12px}p strong{color:var(--text)}
+ul,ol{padding-left:24px;margin-bottom:14px}li{color:var(--text2);margin-bottom:5px}li strong{color:var(--text)}
+code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.2);border-radius:4px;padding:1px 6px;color:var(--blue)}
+.box{border-radius:8px;padding:16px 18px;margin:16px 0;display:flex;gap:12px;align-items:flex-start}
+.box-icon{font-size:18px;flex-shrink:0;margin-top:1px}.box-body{flex:1}
+.box-title{font-weight:600;font-size:13px;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+.box-text{font-size:14px;color:var(--text2);line-height:1.6}.box-text code{font-size:11.5px}
+.box.blue{background:rgba(88,166,255,.06);border:1px solid rgba(88,166,255,.2)}.box.blue .box-title{color:var(--blue)}
+.box.green{background:rgba(63,185,80,.06);border:1px solid rgba(63,185,80,.2)}.box.green .box-title{color:var(--green)}
+.box.yellow{background:rgba(227,179,65,.06);border:1px solid rgba(227,179,65,.2)}.box.yellow .box-title{color:var(--yellow)}
+.box.orange{background:rgba(247,129,102,.06);border:1px solid rgba(247,129,102,.2)}.box.orange .box-title{color:var(--orange)}
+.box.purple{background:rgba(210,168,255,.06);border:1px solid rgba(210,168,255,.2)}.box.purple .box-title{color:var(--purple)}
+.cw{margin:16px 0;border-radius:10px;overflow:hidden;border:1px solid #333}
+.ch{background:#1e1e1e;padding:10px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #333}
+.dots{display:flex;gap:6px}.dot{width:12px;height:12px;border-radius:50%}
+.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.fl{font-family:'JetBrains Mono',monospace;font-size:12px;color:#6a6a6a;margin-left:4px}
+.cb{background:#1e1e1e;padding:16px 20px;overflow-x:auto}
+pre{font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.65;margin:0}
+.kw{color:#569cd6}.ty{color:#4ec9b0;font-style:italic}.st{color:#ce9178}.nu{color:#b5cea8}
+.cm{color:#6a9955;font-style:italic}.me{color:#dcdcaa}.cl{color:#4ec9b0}.pu{color:#d4d4d4}
+.va{color:#9cdcfe}.an{color:#c586c0}.ar{color:#569cd6;font-weight:700}
+.out{background:#0a0f0a;border-left:3px solid var(--green);border-radius:0 0 8px 8px;padding:12px 20px;margin-top:-1px}
+.ol{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);margin-bottom:6px;letter-spacing:.05em;font-weight:600}
+.ot{font-family:'JetBrains Mono',monospace;font-size:13px;color:#a6e22e;line-height:1.6}
+.tw{overflow-x:auto;margin:16px 0;border-radius:8px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead tr{background:var(--bg3)}
+thead th{padding:11px 14px;text-align:left;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border)}
+tbody tr:nth-child(even){background:rgba(255,255,255,.02)}tbody tr:hover{background:rgba(88,166,255,.04)}
+td{padding:10px 14px;color:var(--text2);border-bottom:1px solid var(--border);vertical-align:top}
+td:first-child{font-weight:500;color:var(--text)}td code{font-size:11.5px}tr:last-child td{border-bottom:none}
+.ec{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:22px;margin-bottom:24px}
+.en{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--yellow);border:1px solid rgba(227,179,65,.3);border-radius:4px;padding:2px 8px;display:inline-block;margin-bottom:10px}
+.et{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--text);margin-bottom:8px}
+.em{font-size:13px;color:var(--purple);margin-bottom:10px}
+.ep{color:var(--text2);font-size:14px;margin-bottom:12px}
+.ew{background:rgba(63,185,80,.06);border-left:3px solid var(--green);padding:10px 14px;border-radius:0 6px 6px 0;margin-top:10px;font-size:13px;color:var(--text2)}
+.ew strong{color:var(--green)}
+.iq{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:22px;margin-bottom:20px}
+.iq-q{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:var(--text);margin-bottom:10px}
+.iq-a{color:var(--text2);font-size:14px;line-height:1.65;margin-bottom:10px}
+footer{text-align:center;padding:32px;border-top:1px solid var(--border);color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="badge">&#9749; Java 8 &middot; Complete Reference</div>
+  <h1 class="hero-title">Streams &amp; Functional Programming</h1>
+  <p class="hero-sub">Lambda Expressions &middot; Functional Interfaces &middot; Stream API &middot; Collectors &middot; Parallel Streams &mdash; everything self-contained.</p>
+</div>
+<div class="page">
+<nav class="toc">
+  <div class="toc-title">Table of Contents</div>
+  <div class="toc-grid">
+    <a href="#s1"><span>01</span>Why Java 8? Motivation &amp; Overview</a>
+    <a href="#s2"><span>02</span>Lambda Expressions</a>
+    <a href="#s3"><span>03</span>Functional Interfaces</a>
+    <a href="#s4"><span>04</span>Predicate&lt;T&gt;</a>
+    <a href="#s5"><span>05</span>Function&lt;T,R&gt;</a>
+    <a href="#s6"><span>06</span>Consumer&lt;T&gt; &amp; Supplier&lt;T&gt;</a>
+    <a href="#s7"><span>07</span>Bi-Variants &amp; Operators</a>
+    <a href="#s8"><span>08</span>Method References &amp; Constructor References</a>
+    <a href="#s9"><span>09</span>Introduction to Streams</a>
+    <a href="#s10"><span>10</span>Creating Streams</a>
+    <a href="#s11"><span>11</span>Intermediate Operations</a>
+    <a href="#s12"><span>12</span>Terminal Operations</a>
+    <a href="#s13"><span>13</span>Lazy Evaluation</a>
+    <a href="#s14"><span>14</span>Parallel Streams</a>
+    <a href="#s15"><span>15</span>Collectors &mdash; Complete Guide</a>
+    <a href="#s16"><span>16</span>Primitive Streams</a>
+    <a href="#s17"><span>17</span>Exercises (8 Problems)</a>
+    <a href="#s18"><span>18</span>Interview Questions</a>
+    <a href="#s19"><span>19</span>Summary &amp; Cheat Sheet</a>
+  </div>
+</nav>
+<!-- SECTION 1 -->
+<section class="section" id="s1">
+<div class="sec-header"><span class="sec-num">01</span><span class="sec-title">Why Java 8? Motivation &amp; Overview</span></div>
+<div class="sub">The Problem Before Java 8</div>
+<p>Java is an object-oriented language, but before Java 8, processing a collection required writing verbose for-loops, if-else blocks, and anonymous inner classes. Even a simple task like "find all even numbers" demanded multiple lines of boilerplate — more code means more places to introduce bugs and worse readability.</p>
+<div class="sub">Key Features Introduced in Java 8</div>
+<ul>
+  <li><strong>Lambda Expressions</strong> &mdash; anonymous functions; eliminate boilerplate; enable functional style</li>
+  <li><strong>Streams API</strong> &mdash; declarative, functional data-processing pipeline for collections</li>
+  <li><strong>Date and Time API</strong> (<code>java.time</code>) &mdash; modern, immutable replacement for <code>java.util.Date</code></li>
+  <li><strong>Functional Interfaces</strong> &mdash; interfaces with exactly one abstract method; the foundation for lambdas</li>
+  <li><strong>Method References</strong> &mdash; shorthand notation for lambdas that simply call an existing method</li>
+  <li><strong>Optional&lt;T&gt;</strong> &mdash; a container to safely represent nullable values</li>
+  <li><strong>Default &amp; Static methods in interfaces</strong> &mdash; backward-compatible interface evolution</li>
+</ul>
+<div class="box blue"><span class="box-icon">&#128161;</span><div class="box-body"><span class="box-title">Core Idea</span><p class="box-text">Java 8 blended OOP with Functional Programming. Functions became first-class values &mdash; you can store them in variables, pass them as arguments, and return them from methods. This is what enables the entire Streams API.</p></div></div>
+<div class="box yellow"><span class="box-icon">&#11088;</span><div class="box-body"><span class="box-title">Interview Favourite</span><p class="box-text">Interviewers always ask "What are the main features of Java 8?" Know Lambda, Streams, Functional Interfaces, Method References, Optional, and the new Date/Time API cold.</p></div></div>
+</section>
+
+<!-- SECTION 2 -->
+<section class="section" id="s2">
+<div class="sec-header"><span class="sec-num">02</span><span class="sec-title">Lambda Expressions</span></div>
+<div class="sub">What is a Lambda?</div>
+<p>A lambda expression is an <strong>anonymous function</strong> &mdash; it has no name, no explicit return type, and no access modifier. It is a compact way to represent a block of code that implements a single-method interface (a functional interface). Lambdas are the syntactic backbone of the entire Streams API.</p>
+<div class="sub">Syntax Forms</div>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">LambdaSyntax.java</span></div>
+<div class="cb"><pre>
+<span class="cm">// Full form: parameters -&gt; { body }</span>
+(<span class="ty">int</span> a, <span class="ty">int</span> b) <span class="ar">-&gt;</span> { <span class="kw">return</span> a + b; }
+
+<span class="cm">// Single expression: no braces, no return keyword needed</span>
+(<span class="ty">int</span> a, <span class="ty">int</span> b) <span class="ar">-&gt;</span> a + b
+
+<span class="cm">// No parameters</span>
+() <span class="ar">-&gt;</span> <span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="st">"Hello"</span>)
+
+<span class="cm">// Single parameter &mdash; parentheses are optional</span>
+x <span class="ar">-&gt;</span> x * <span class="nu">2</span>
+
+<span class="cm">// Type inference &mdash; compiler infers types from the target interface</span>
+(a, b) <span class="ar">-&gt;</span> a + b
+</pre></div></div>
+
+<div class="sub">Before vs After: Runnable Example</div>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">RunnableDemo.java</span></div>
+<div class="cb"><pre>
+<span class="cm">// BEFORE Java 8: Required a separate named class</span>
+<span class="kw">class</span> <span class="cl">Task</span> <span class="kw">implements</span> <span class="cl">Runnable</span> {
+    <span class="an">@Override</span>
+    <span class="kw">public void</span> <span class="me">run</span>() {
+        <span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="st">"Hello from task"</span>);  <span class="cm">// entire class just for this line</span>
+    }
+}
+<span class="cl">Runnable</span> <span class="va">r1</span> = <span class="kw">new</span> <span class="cl">Task</span>();
+
+<span class="cm">// JAVA 8 Lambda: one line replaces the entire class</span>
+<span class="cl">Runnable</span> <span class="va">r2</span> = () <span class="ar">-&gt;</span> <span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="st">"Hello from lambda"</span>);
+<span class="va">r1</span>.<span class="me">run</span>();  <span class="va">r2</span>.<span class="me">run</span>();
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">Hello from task
+Hello from lambda</div></div>
+
+<div class="sub">Step-by-Step Conversion: Method to Lambda</div>
+<p>To convert any method to a lambda: <strong>1</strong> Remove the access modifier. <strong>2</strong> Remove the return type. <strong>3</strong> Remove the method name. <strong>4</strong> Add <code>-&gt;</code> between parameters and body. <strong>5</strong> For single-expression bodies, drop braces and the <code>return</code> keyword.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">Conversion.java</span></div>
+<div class="cb"><pre>
+<span class="cm">// Original method: public int add(int a, int b) { return a + b; }</span>
+<span class="cm">// Step 1 remove modifier:     int add(int a, int b) { return a + b; }</span>
+<span class="cm">// Step 2 remove return type:      add(int a, int b) { return a + b; }</span>
+<span class="cm">// Step 3 remove name:              (int a, int b) { return a + b; }</span>
+<span class="cm">// Step 4 add arrow:                (int a, int b) -&gt; { return a + b; }</span>
+<span class="cm">// Step 5 single expression:        (a, b) -&gt; a + b   &lt;-- final lambda</span>
+</pre></div></div>
+
+<div class="box orange"><span class="box-icon">&#9888;&#65039;</span><div class="box-body"><span class="box-title">Effectively Final Rule</span><p class="box-text">Variables captured from the enclosing scope inside a lambda must be <strong>final or effectively final</strong> (never reassigned after initialisation). The compiler enforces this because lambdas may execute on a different thread or at a later time.</p></div></div>
+<div class="box green"><span class="box-icon">&#9989;</span><div class="box-body"><span class="box-title">Best Practice</span><p class="box-text">Keep lambda bodies short &mdash; ideally one expression. If a lambda grows beyond 2&ndash;3 lines, extract it into a named method and use a method reference. This dramatically improves readability and testability.</p></div></div>
+</section>
+
+<!-- SECTION 3 -->
+<section class="section" id="s3">
+<div class="sec-header"><span class="sec-num">03</span><span class="sec-title">Functional Interfaces</span></div>
+<div class="sub">Definition</div>
+<p>A <strong>functional interface</strong> has <em>exactly one abstract method</em>. It may have any number of <code>default</code> and <code>static</code> methods. The <code>@FunctionalInterface</code> annotation is optional but strongly recommended &mdash; it causes a compile error if you accidentally add a second abstract method.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">FunctionalInterfaceDemo.java</span></div>
+<div class="cb"><pre>
+<span class="an">@FunctionalInterface</span>                         <span class="cm">// optional but recommended</span>
+<span class="kw">interface</span> <span class="cl">MathOperation</span> {
+    <span class="ty">int</span> <span class="me">operate</span>(<span class="ty">int</span> a, <span class="ty">int</span> b);            <span class="cm">// exactly ONE abstract method</span>
+
+    <span class="kw">default void</span> <span class="me">describe</span>() {             <span class="cm">// default method: doesn't count</span>
+        <span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="st">"I am a math op"</span>);
+    }
+}
+
+<span class="cm">// Implement via lambda &mdash; no class needed</span>
+<span class="cl">MathOperation</span> <span class="va">add</span>      = (a, b) <span class="ar">-&gt;</span> a + b;
+<span class="cl">MathOperation</span> <span class="va">subtract</span> = (a, b) <span class="ar">-&gt;</span> a - b;
+<span class="cl">MathOperation</span> <span class="va">multiply</span> = (a, b) <span class="ar">-&gt;</span> a * b;
+
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">add</span>.<span class="me">operate</span>(<span class="nu">5</span>, <span class="nu">3</span>));      <span class="cm">// 8</span>
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">subtract</span>.<span class="me">operate</span>(<span class="nu">5</span>, <span class="nu">3</span>)); <span class="cm">// 2</span>
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">multiply</span>.<span class="me">operate</span>(<span class="nu">5</span>, <span class="nu">3</span>)); <span class="cm">// 15</span>
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">8
+2
+15</div></div>
+
+<div class="box blue"><span class="box-icon">&#128161;</span><div class="box-body"><span class="box-title">Functional Programming in Practice</span><p class="box-text">We are storing a <em>function</em> in a variable: <code>MathOperation add = (a,b) -&gt; a+b</code>. In functional programming, functions are first-class values &mdash; they can be stored, passed as parameters, and returned from other functions. This is the foundation of the Streams API.</p></div></div>
+
+<p>Java 8 ships with a rich set of built-in functional interfaces in <code>java.util.function</code>. The four most important:</p>
+<div class="tw"><table>
+<thead><tr><th>Interface</th><th>Method</th><th>Takes</th><th>Returns</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>Predicate&lt;T&gt;</code></td><td><code>test(T t)</code></td><td>T</td><td>boolean</td><td>Test a condition</td></tr>
+<tr><td><code>Function&lt;T,R&gt;</code></td><td><code>apply(T t)</code></td><td>T</td><td>R</td><td>Transform a value</td></tr>
+<tr><td><code>Consumer&lt;T&gt;</code></td><td><code>accept(T t)</code></td><td>T</td><td>void</td><td>Side effect (print, save)</td></tr>
+<tr><td><code>Supplier&lt;T&gt;</code></td><td><code>get()</code></td><td>nothing</td><td>T</td><td>Provide a value</td></tr>
+</tbody>
+</table></div>
+</section>
+<!-- SECTION 4 -->
+<section class="section" id="s4">
+<div class="sec-header"><span class="sec-num green">04</span><span class="sec-title">Predicate&lt;T&gt; &mdash; Test a Condition</span></div>
+<p><code>Predicate&lt;T&gt;</code> has the method <code>boolean test(T t)</code>. You give it an element; it returns <code>true</code> or <code>false</code>. Use it for filtering, validation, and conditional checks. It provides <code>.and()</code>, <code>.or()</code>, and <code>.negate()</code> to compose predicates.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">PredicateDemo.java</span></div>
+<div class="cb"><pre>
+<span class="kw">import</span> java.util.function.<span class="cl">Predicate</span>;
+
+<span class="cm">// Basic predicate: is the number even?</span>
+<span class="cl">Predicate</span>&lt;<span class="cl">Integer</span>&gt; <span class="va">isEven</span> = x <span class="ar">-&gt;</span> x % <span class="nu">2</span> == <span class="nu">0</span>;
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">isEven</span>.<span class="me">test</span>(<span class="nu">4</span>));             <span class="cm">// true</span>
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">isEven</span>.<span class="me">test</span>(<span class="nu">7</span>));             <span class="cm">// false</span>
+
+<span class="cm">// String predicate</span>
+<span class="cl">Predicate</span>&lt;<span class="cl">String</span>&gt; <span class="va">startsA</span> = x <span class="ar">-&gt;</span> x.<span class="me">startsWith</span>(<span class="st">"A"</span>);
+<span class="cl">Predicate</span>&lt;<span class="cl">String</span>&gt; <span class="va">endsT</span>   = x <span class="ar">-&gt;</span> x.<span class="me">endsWith</span>(<span class="st">"t"</span>);
+
+<span class="cm">// AND: both conditions must pass</span>
+<span class="cl">Predicate</span>&lt;<span class="cl">String</span>&gt; <span class="va">both</span>   = <span class="va">startsA</span>.<span class="me">and</span>(<span class="va">endsT</span>);
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">both</span>.<span class="me">test</span>(<span class="st">"Ankit"</span>));          <span class="cm">// true (starts A AND ends t)</span>
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">both</span>.<span class="me">test</span>(<span class="st">"Akshay"</span>));         <span class="cm">// false (ends y, not t)</span>
+
+<span class="cm">// OR: at least one condition passes</span>
+<span class="cl">Predicate</span>&lt;<span class="cl">String</span>&gt; <span class="va">either</span> = <span class="va">startsA</span>.<span class="me">or</span>(<span class="va">endsT</span>);
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">either</span>.<span class="me">test</span>(<span class="st">"Akshay"</span>));        <span class="cm">// true (starts with A)</span>
+
+<span class="cm">// NEGATE: reverses the result</span>
+<span class="cl">Predicate</span>&lt;<span class="cl">String</span>&gt; <span class="va">notA</span>   = <span class="va">startsA</span>.<span class="me">negate</span>();
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">notA</span>.<span class="me">test</span>(<span class="st">"Rahul"</span>));           <span class="cm">// true (does NOT start with A)</span>
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">true  false  true  false  true  true</div></div>
+<div class="box blue"><span class="box-icon">&#128161;</span><div class="box-body"><span class="box-title">Composing Predicates</span><p class="box-text"><code>.and()</code>, <code>.or()</code>, <code>.negate()</code> each return a <em>new</em> Predicate &mdash; they do not modify the original. You can chain them indefinitely. For case-insensitive checks, normalise first: <code>x -&gt; x.toLowerCase().startsWith("a")</code>.</p></div></div>
+</section>
+
+<!-- SECTION 5 -->
+<section class="section" id="s5">
+<div class="sec-header"><span class="sec-num purple">05</span><span class="sec-title">Function&lt;T,R&gt; &mdash; Transform a Value</span></div>
+<p><code>Function&lt;T,R&gt;</code> has the method <code>R apply(T t)</code>. It takes one input of type T and produces a result of type R. Think of it as a conversion or transformation &mdash; Integer to String, String to its length, number to its square.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">FunctionDemo.java</span></div>
+<div class="cb"><pre>
+<span class="kw">import</span> java.util.function.<span class="cl">Function</span>;
+
+<span class="cl">Function</span>&lt;<span class="cl">Integer</span>, <span class="cl">Integer</span>&gt; <span class="va">doubleIt</span> = x <span class="ar">-&gt;</span> <span class="nu">2</span> * x;
+<span class="cl">Function</span>&lt;<span class="cl">Integer</span>, <span class="cl">Integer</span>&gt; <span class="va">tripleIt</span> = x <span class="ar">-&gt;</span> <span class="nu">3</span> * x;
+
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">doubleIt</span>.<span class="me">apply</span>(<span class="nu">10</span>));              <span class="cm">// 20</span>
+
+<span class="cm">// andThen: apply doubleIt FIRST, then tripleIt to the result</span>
+<span class="cl">Function</span>&lt;<span class="cl">Integer</span>, <span class="cl">Integer</span>&gt; <span class="va">dThenT</span> = <span class="va">doubleIt</span>.<span class="me">andThen</span>(<span class="va">tripleIt</span>);
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">dThenT</span>.<span class="me">apply</span>(<span class="nu">20</span>));               <span class="cm">// 20*2=40, 40*3 = 120</span>
+
+<span class="cm">// compose: apply tripleIt FIRST, then doubleIt (reverse order)</span>
+<span class="cl">Function</span>&lt;<span class="cl">Integer</span>, <span class="cl">Integer</span>&gt; <span class="va">tFirst</span> = <span class="va">doubleIt</span>.<span class="me">compose</span>(<span class="va">tripleIt</span>);
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">tFirst</span>.<span class="me">apply</span>(<span class="nu">10</span>));                <span class="cm">// 10*3=30, 30*2 = 60</span>
+
+<span class="cm">// identity: returns the input unchanged (useful as a no-op transformer)</span>
+<span class="cl">Function</span>&lt;<span class="cl">Integer</span>, <span class="cl">Integer</span>&gt; <span class="va">same</span> = <span class="cl">Function</span>.<span class="me">identity</span>();
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">same</span>.<span class="me">apply</span>(<span class="nu">5</span>));                  <span class="cm">// 5</span>
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">20  120  60  5</div></div>
+<div class="box blue"><span class="box-icon">&#128161;</span><div class="box-body"><span class="box-title">andThen vs compose Memory Trick</span><p class="box-text"><strong>andThen(g)</strong>: reads left-to-right &mdash; "do this, THEN do g". <strong>compose(g)</strong>: reads right-to-left (math-style) &mdash; "do g first, THEN apply this". When in doubt, prefer <code>andThen</code> &mdash; it's more intuitive.</p></div></div>
+</section>
+
+<!-- SECTION 6 -->
+<section class="section" id="s6">
+<div class="sec-header"><span class="sec-num orange">06</span><span class="sec-title">Consumer&lt;T&gt; &amp; Supplier&lt;T&gt;</span></div>
+<div class="sub">Consumer&lt;T&gt; &mdash; Takes Something, Returns Nothing</div>
+<p><code>Consumer&lt;T&gt;</code> has the method <code>void accept(T t)</code>. It consumes a value and does something with it (prints, saves, logs) but returns nothing. Think of it like eating: something goes in, nothing comes out. It provides <code>.andThen()</code> to chain consumers sequentially.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">ConsumerDemo.java</span></div>
+<div class="cb"><pre>
+<span class="kw">import</span> java.util.function.<span class="cl">Consumer</span>;
+
+<span class="cl">Consumer</span>&lt;<span class="cl">Integer</span>&gt; <span class="va">print</span>  = x <span class="ar">-&gt;</span> <span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(x);
+<span class="va">print</span>.<span class="me">accept</span>(<span class="nu">25</span>);                                        <span class="cm">// 25</span>
+
+<span class="cm">// andThen: chain two consumers</span>
+<span class="cl">Consumer</span>&lt;<span class="cl">String</span>&gt; <span class="va">upper</span> = s <span class="ar">-&gt;</span> <span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(s.<span class="me">toUpperCase</span>());
+<span class="cl">Consumer</span>&lt;<span class="cl">String</span>&gt; <span class="va">lower</span> = s <span class="ar">-&gt;</span> <span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(s.<span class="me">toLowerCase</span>());
+<span class="cl">Consumer</span>&lt;<span class="cl">String</span>&gt; <span class="va">both</span>  = <span class="va">upper</span>.<span class="me">andThen</span>(<span class="va">lower</span>);              <span class="cm">// upper runs first</span>
+<span class="va">both</span>.<span class="me">accept</span>(<span class="st">"Hello"</span>);                                     <span class="cm">// HELLO then hello</span>
+
+<span class="cm">// Consumer with a list &mdash; common pattern with stream.forEach()</span>
+<span class="cl">List</span>&lt;<span class="cl">Integer</span>&gt; <span class="va">nums</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>);
+<span class="cl">Consumer</span>&lt;<span class="cl">List</span>&lt;<span class="cl">Integer</span>&gt;&gt; <span class="va">printAll</span> = list <span class="ar">-&gt;</span> {
+    <span class="kw">for</span> (<span class="ty">int</span> n : list) <span class="cl">System</span>.<span class="va">out</span>.<span class="me">print</span>(n + <span class="st">" "</span>);
+};
+<span class="va">printAll</span>.<span class="me">accept</span>(<span class="va">nums</span>);                                    <span class="cm">// 1 2 3</span>
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">25  HELLO  hello  1 2 3</div></div>
+
+<div class="sub">Supplier&lt;T&gt; &mdash; Returns Something, Takes Nothing</div>
+<p><code>Supplier&lt;T&gt;</code> has the method <code>T get()</code>. It takes no arguments and returns a value. Use it for lazy initialisation, factory methods, or value generation.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">SupplierDemo.java</span></div>
+<div class="cb"><pre>
+<span class="kw">import</span> java.util.function.<span class="cl">Supplier</span>;
+
+<span class="cl">Supplier</span>&lt;<span class="cl">String</span>&gt; <span class="va">greeting</span> = () <span class="ar">-&gt;</span> <span class="st">"Hello, World!"</span>;
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">greeting</span>.<span class="me">get</span>());                     <span class="cm">// Hello, World!</span>
+
+<span class="cm">// Lazy DB connection &mdash; only established when get() is called</span>
+<span class="cm">// Supplier&lt;Connection&gt; db = () -&gt; DriverManager.getConnection(url);</span>
+
+<span class="cm">// Generate random values</span>
+<span class="cl">Supplier</span>&lt;<span class="cl">Double</span>&gt; <span class="va">rand</span> = () <span class="ar">-&gt;</span> <span class="cl">Math</span>.<span class="me">random</span>();
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">rand</span>.<span class="me">get</span>());                          <span class="cm">// e.g. 0.742...</span>
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">Hello, World!
+0.742... (varies each run)</div></div>
+<div class="box orange"><span class="box-icon">&#9888;&#65039;</span><div class="box-body"><span class="box-title">Consumer Has No compose()</span><p class="box-text">Consumer only has <code>andThen()</code>, not <code>compose()</code>. This is intentional &mdash; since Consumer's return type is void, there's nothing to feed into a reverse chain. This is different from Function which has both.</p></div></div>
+</section>
+
+<!-- SECTION 7 -->
+<section class="section" id="s7">
+<div class="sec-header"><span class="sec-num yellow">07</span><span class="sec-title">Bi-Variants &amp; Unary/Binary Operators</span></div>
+<p>All the core functional interfaces have "Bi" variants that accept <strong>two</strong> arguments. Two specialised interfaces, <code>UnaryOperator</code> and <code>BinaryOperator</code>, handle same-type I/O without repetitive generics.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">BiVariants.java</span></div>
+<div class="cb"><pre>
+<span class="kw">import</span> java.util.function.*;
+
+<span class="cm">// BiPredicate: two args, returns boolean</span>
+<span class="cl">BiPredicate</span>&lt;<span class="cl">Integer</span>, <span class="cl">Integer</span>&gt; <span class="va">sumTen</span> = (a, b) <span class="ar">-&gt;</span> (a + b) == <span class="nu">10</span>;
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">sumTen</span>.<span class="me">test</span>(<span class="nu">5</span>, <span class="nu">5</span>));           <span class="cm">// true</span>
+
+<span class="cm">// BiFunction: two args of possibly different types, one result</span>
+<span class="cl">BiFunction</span>&lt;<span class="cl">String</span>, <span class="cl">String</span>, <span class="cl">Integer</span>&gt; <span class="va">totalLen</span> = (x, y) <span class="ar">-&gt;</span> (x + y).<span class="me">length</span>();
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">totalLen</span>.<span class="me">apply</span>(<span class="st">"abc"</span>, <span class="st">""</span>));   <span class="cm">// 3</span>
+
+<span class="cm">// BiConsumer: two args, void return</span>
+<span class="cl">BiConsumer</span>&lt;<span class="cl">String</span>, <span class="cl">Integer</span>&gt; <span class="va">pair</span> = (name, age) <span class="ar">-&gt;</span>
+    <span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(name + <span class="st">" is "</span> + age);
+<span class="va">pair</span>.<span class="me">accept</span>(<span class="st">"Alice"</span>, <span class="nu">30</span>);                          <span class="cm">// Alice is 30</span>
+
+<span class="cm">// UnaryOperator&lt;T&gt;: input and output are SAME type (extends Function&lt;T,T&gt;)</span>
+<span class="cl">UnaryOperator</span>&lt;<span class="cl">Integer</span>&gt; <span class="va">addOne</span> = x <span class="ar">-&gt;</span> x + <span class="nu">1</span>;
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">addOne</span>.<span class="me">apply</span>(<span class="nu">5</span>));              <span class="cm">// 6</span>
+
+<span class="cm">// BinaryOperator&lt;T&gt;: two same-type inputs, same-type output</span>
+<span class="cl">BinaryOperator</span>&lt;<span class="cl">Integer</span>&gt; <span class="va">sum</span> = (x, y) <span class="ar">-&gt;</span> x + y;
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">sum</span>.<span class="me">apply</span>(<span class="nu">4</span>, <span class="nu">6</span>));               <span class="cm">// 10</span>
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">true  3  Alice is 30  6  10</div></div>
+<div class="box green"><span class="box-icon">&#9989;</span><div class="box-body"><span class="box-title">When to Use Each</span><p class="box-text">Use <strong>UnaryOperator</strong> instead of <code>Function&lt;T,T&gt;</code> when input and output types are the same &mdash; less boilerplate, more expressive. Use <strong>BinaryOperator</strong> instead of <code>BiFunction&lt;T,T,T&gt;</code>. Both are used heavily inside the Streams API: <code>Stream.iterate</code> uses UnaryOperator; <code>reduce()</code> uses BinaryOperator.</p></div></div>
+</section>
+<!-- SECTION 8 -->
+<section class="section" id="s8">
+<div class="sec-header"><span class="sec-num">08</span><span class="sec-title">Method References &amp; Constructor References</span></div>
+<p>A method reference is a shorthand for a lambda that <em>only calls an existing method</em>. The double-colon <code>::</code> operator passes a reference to a method without invoking it &mdash; just as you pass a variable reference.</p>
+<div class="tw"><table>
+<thead><tr><th>Type</th><th>Syntax</th><th>Equivalent Lambda</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td>Static method</td><td><code>Class::staticMethod</code></td><td><code>x -&gt; Class.staticMethod(x)</code></td><td><code>Integer::parseInt</code></td></tr>
+<tr><td>Instance method (specific obj)</td><td><code>obj::instanceMethod</code></td><td><code>x -&gt; obj.instanceMethod(x)</code></td><td><code>System.out::println</code></td></tr>
+<tr><td>Instance method (arbitrary obj)</td><td><code>Class::instanceMethod</code></td><td><code>x -&gt; x.instanceMethod()</code></td><td><code>String::toUpperCase</code></td></tr>
+<tr><td>Constructor</td><td><code>Class::new</code></td><td><code>x -&gt; new Class(x)</code></td><td><code>MobilePhone::new</code></td></tr>
+</tbody>
+</table></div>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">MethodRefDemo.java</span></div>
+<div class="cb"><pre>
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">students</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="st">"Ram"</span>, <span class="st">"Shyam"</span>, <span class="st">"Ghanshyam"</span>);
+
+<span class="cm">// Lambda form (verbose)</span>
+<span class="va">students</span>.<span class="me">forEach</span>(s <span class="ar">-&gt;</span> <span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(s));
+
+<span class="cm">// Method reference form (clean) &mdash; passes println as reference</span>
+<span class="va">students</span>.<span class="me">forEach</span>(<span class="cl">System</span>.<span class="va">out</span>::<span class="me">println</span>);        <span class="cm">// same output, less boilerplate</span>
+
+<span class="cm">// Arbitrary instance method reference</span>
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">upper</span> = <span class="va">students</span>.<span class="me">stream</span>()
+    .<span class="me">map</span>(<span class="cl">String</span>::<span class="me">toUpperCase</span>)              <span class="cm">// calls toUpperCase() on each String</span>
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">toList</span>());
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">upper</span>);                  <span class="cm">// [RAM, SHYAM, GHANSHYAM]</span>
+
+<span class="cm">// Constructor Reference</span>
+<span class="kw">class</span> <span class="cl">Phone</span> {
+    <span class="cl">String</span> <span class="va">name</span>;
+    <span class="cl">Phone</span>(<span class="cl">String</span> <span class="va">name</span>) { <span class="kw">this</span>.<span class="va">name</span> = <span class="va">name</span>; }  <span class="cm">// constructor matching String -&gt; Phone</span>
+}
+<span class="cl">List</span>&lt;<span class="cl">Phone</span>&gt; <span class="va">phones</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="st">"iPhone"</span>,<span class="st">"Samsung"</span>).<span class="me">stream</span>()
+    .<span class="me">map</span>(<span class="cl">Phone</span>::<span class="kw">new</span>)                         <span class="cm">// new Phone(name) for each string</span>
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">toList</span>());
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">Ram  Shyam  Ghanshyam
+[RAM, SHYAM, GHANSHYAM]</div></div>
+<div class="box orange"><span class="box-icon">&#9888;&#65039;</span><div class="box-body"><span class="box-title">When NOT to Use Method References</span><p class="box-text">Only use a method reference when the lambda does <em>nothing but call a single method</em>. If you need conditional logic, multiple statements, or chained calls (e.g. <code>x -&gt; x.toUpperCase().trim()</code>), use a full lambda &mdash; a method reference won't work there.</p></div></div>
+</section>
+
+<!-- SECTION 9 -->
+<section class="section" id="s9">
+<div class="sec-header"><span class="sec-num green">09</span><span class="sec-title">Introduction to Streams</span></div>
+<div class="sub">What is a Stream?</div>
+<p>A Stream is a <strong>sequence of elements supporting a functional processing pipeline</strong>. Streams do not store data &mdash; they are wrappers around a data source (like a List) that allow you to express complex data-processing logic concisely. They support lazy evaluation, method references, and all the functional interfaces we studied.</p>
+<div class="tw"><table>
+<thead><tr><th>Stage</th><th>What It Does</th><th>Examples</th><th>Returns</th></tr></thead>
+<tbody>
+<tr><td>Source</td><td>Creates the stream</td><td><code>list.stream()</code>, <code>Arrays.stream(arr)</code></td><td><code>Stream&lt;T&gt;</code></td></tr>
+<tr><td>Intermediate</td><td>Lazy transform; returns another stream</td><td><code>filter</code>, <code>map</code>, <code>sorted</code>, <code>flatMap</code>, <code>distinct</code>, <code>limit</code>, <code>skip</code>, <code>peek</code></td><td><code>Stream&lt;T&gt;</code></td></tr>
+<tr><td>Terminal</td><td>Eager; triggers pipeline; closes stream</td><td><code>collect</code>, <code>forEach</code>, <code>count</code>, <code>reduce</code>, <code>findFirst</code>, <code>anyMatch</code></td><td>Result or void</td></tr>
+</tbody>
+</table></div>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">TraditionalVsStream.java</span></div>
+<div class="cb"><pre>
+<span class="cl">List</span>&lt;<span class="cl">Integer</span>&gt; <span class="va">numbers</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="nu">1</span>,<span class="nu">2</span>,<span class="nu">3</span>,<span class="nu">4</span>,<span class="nu">5</span>);
+
+<span class="cm">// Traditional: 5 lines</span>
+<span class="ty">int</span> <span class="va">count</span> = <span class="nu">0</span>;
+<span class="kw">for</span> (<span class="ty">int</span> n : <span class="va">numbers</span>) { <span class="kw">if</span> (n % <span class="nu">2</span> == <span class="nu">0</span>) <span class="va">count</span>++; }
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">count</span>);                     <span class="cm">// 2</span>
+
+<span class="cm">// Stream: one line</span>
+<span class="ty">long</span> <span class="va">c2</span> = <span class="va">numbers</span>.<span class="me">stream</span>()                       <span class="cm">// source</span>
+    .<span class="me">filter</span>(n <span class="ar">-&gt;</span> n % <span class="nu">2</span> == <span class="nu">0</span>)                     <span class="cm">// intermediate: keep evens</span>
+    .<span class="me">count</span>();                                     <span class="cm">// terminal: count them</span>
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">c2</span>);                          <span class="cm">// 2</span>
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">2
+2</div></div>
+<div class="box blue"><span class="box-icon">&#128161;</span><div class="box-body"><span class="box-title">Stream is an Interface</span><p class="box-text"><code>Stream&lt;T&gt;</code> is in <code>java.util.stream</code>. A stream can only be consumed <strong>once</strong> &mdash; after a terminal operation it is closed. Reusing it throws <code>IllegalStateException</code>.</p></div></div>
+</section>
+
+<!-- SECTION 10 -->
+<section class="section" id="s10">
+<div class="sec-header"><span class="sec-num purple">10</span><span class="sec-title">Creating Streams (7 Ways)</span></div>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">CreatingStreams.java</span></div>
+<div class="cb"><pre>
+<span class="cm">// 1. From Collection (most common)</span>
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">list</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="st">"a"</span>,<span class="st">"b"</span>,<span class="st">"c"</span>);
+<span class="cl">Stream</span>&lt;<span class="cl">String</span>&gt; <span class="va">s1</span> = <span class="va">list</span>.<span class="me">stream</span>();
+
+<span class="cm">// 2. From Array</span>
+<span class="cl">Stream</span>&lt;<span class="cl">String</span>&gt; <span class="va">s2</span> = <span class="cl">Arrays</span>.<span class="me">stream</span>(<span class="kw">new</span> <span class="cl">String</span>[]{<span class="st">"x"</span>,<span class="st">"y"</span>});
+
+<span class="cm">// 3. Stream.of() &mdash; from values directly</span>
+<span class="cl">Stream</span>&lt;<span class="cl">Integer</span>&gt; <span class="va">s3</span> = <span class="cl">Stream</span>.<span class="me">of</span>(<span class="nu">1</span>,<span class="nu">2</span>,<span class="nu">3</span>,<span class="nu">4</span>,<span class="nu">5</span>);
+
+<span class="cm">// 4. Stream.generate(Supplier) &mdash; INFINITE; each element independently generated</span>
+<span class="cl">Stream</span>.<span class="me">generate</span>(<span class="cl">Math</span>::<span class="me">random</span>).<span class="me">limit</span>(<span class="nu">3</span>).<span class="me">forEach</span>(<span class="cl">System</span>.<span class="va">out</span>::<span class="me">println</span>);
+
+<span class="cm">// 5. Stream.iterate(seed, UnaryOperator) &mdash; each element derived from previous</span>
+<span class="cl">Stream</span>.<span class="me">iterate</span>(<span class="nu">1</span>, x <span class="ar">-&gt;</span> x + <span class="nu">1</span>).<span class="me">limit</span>(<span class="nu">5</span>).<span class="me">forEach</span>(<span class="cl">System</span>.<span class="va">out</span>::<span class="me">println</span>); <span class="cm">// 1 2 3 4 5</span>
+
+<span class="cm">// 6. String.chars() &mdash; returns IntStream of char ASCII values</span>
+<span class="st">"hello"</span>.<span class="me">chars</span>().<span class="me">forEach</span>(<span class="cl">System</span>.<span class="va">out</span>::<span class="me">println</span>);  <span class="cm">// 104 101 108 108 111</span>
+
+<span class="cm">// 7. IntStream.range / rangeClosed</span>
+<span class="cl">IntStream</span>.<span class="me">range</span>(<span class="nu">1</span>, <span class="nu">5</span>).<span class="me">forEach</span>(<span class="cl">System</span>.<span class="va">out</span>::<span class="me">println</span>);       <span class="cm">// 1 2 3 4 (end exclusive)</span>
+<span class="cl">IntStream</span>.<span class="me">rangeClosed</span>(<span class="nu">1</span>, <span class="nu">5</span>).<span class="me">forEach</span>(<span class="cl">System</span>.<span class="va">out</span>::<span class="me">println</span>); <span class="cm">// 1 2 3 4 5 (end inclusive)</span>
+</pre></div></div>
+<div class="box yellow"><span class="box-icon">&#11088;</span><div class="box-body"><span class="box-title">generate() vs iterate()</span><p class="box-text"><strong>generate(Supplier)</strong>: each element is independently produced; no relationship between elements. Good for constants or random values. <strong>iterate(seed, UnaryOperator)</strong>: each element is computed from the previous; creates a mathematical sequence. Both are infinite &mdash; always add <code>.limit(n)</code>.</p></div></div>
+</section>
+
+<!-- SECTION 11 -->
+<section class="section" id="s11">
+<div class="sec-header"><span class="sec-num orange">11</span><span class="sec-title">Intermediate Operations</span></div>
+<p>Intermediate operations transform a Stream into another Stream. They are <strong>lazy</strong> &mdash; they don't execute until a terminal operation is called. You can chain as many as you like.</p>
+<div class="sub">filter &mdash; Keep Matching Elements</div>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">FilterDemo.java</span></div>
+<div class="cb"><pre>
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">names</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="st">"Akshit"</span>,<span class="st">"Ram"</span>,<span class="st">"Shyam"</span>,<span class="st">"Alice"</span>,<span class="st">"Bob"</span>);
+
+<span class="cm">// filter + collect: names starting with A, capped at 10</span>
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">result</span> = <span class="va">names</span>.<span class="me">stream</span>()
+    .<span class="me">filter</span>(n <span class="ar">-&gt;</span> n.<span class="me">startsWith</span>(<span class="st">"A"</span>))    <span class="cm">// keep only names starting with A</span>
+    .<span class="me">limit</span>(<span class="nu">10</span>)                           <span class="cm">// cap at 10 (short-circuit on large input)</span>
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">toList</span>());
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">result</span>);             <span class="cm">// [Akshit, Alice]</span>
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">[Akshit, Alice]</div></div>
+
+<div class="sub">map &mdash; Transform Each Element</div>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">MapDemo.java</span></div>
+<div class="cb"><pre>
+<span class="cl">List</span>&lt;<span class="cl">Integer</span>&gt; <span class="va">nums</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="nu">2</span>,<span class="nu">3</span>,<span class="nu">5</span>,<span class="nu">9</span>);
+
+<span class="cm">// Square and sort</span>
+<span class="cl">List</span>&lt;<span class="cl">Integer</span>&gt; <span class="va">squares</span> = <span class="va">nums</span>.<span class="me">stream</span>()
+    .<span class="me">map</span>(n <span class="ar">-&gt;</span> n * n)                     <span class="cm">// 4, 9, 25, 81</span>
+    .<span class="me">sorted</span>()                             <span class="cm">// sort in natural order</span>
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">toList</span>());
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">squares</span>);             <span class="cm">// [4, 9, 25, 81]</span>
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">[4, 9, 25, 81]</div></div>
+
+<div class="sub">flatMap &mdash; Flatten Nested Collections</div>
+<p>map() is one-to-one. flatMap() handles one-to-many &mdash; when each element is itself a collection. It maps each element to a Stream, then flattens all streams into one.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">FlatMapDemo.java</span></div>
+<div class="cb"><pre>
+<span class="cm">// Flatten list of lists</span>
+<span class="cl">List</span>&lt;<span class="cl">List</span>&lt;<span class="cl">String</span>&gt;&gt; <span class="va">nested</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(
+    <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="st">"Apple"</span>,<span class="st">"Banana"</span>),
+    <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="st">"Cherry"</span>,<span class="st">"Date"</span>)
+);
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">flat</span> = <span class="va">nested</span>.<span class="me">stream</span>()
+    .<span class="me">flatMap</span>(inner <span class="ar">-&gt;</span> inner.<span class="me">stream</span>())    <span class="cm">// each inner list becomes its own stream</span>
+    .<span class="me">map</span>(<span class="cl">String</span>::<span class="me">toUpperCase</span>)
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">toList</span>());
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">flat</span>);                 <span class="cm">// [APPLE, BANANA, CHERRY, DATE]</span>
+
+<span class="cm">// Split sentences into individual words</span>
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">sentences</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="st">"Hello World"</span>, <span class="st">"Java Streams"</span>);
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">words</span> = <span class="va">sentences</span>.<span class="me">stream</span>()
+    .<span class="me">flatMap</span>(s <span class="ar">-&gt;</span> <span class="cl">Arrays</span>.<span class="me">stream</span>(s.<span class="me">split</span>(<span class="st">" "</span>)))  <span class="cm">// split each sentence on space</span>
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">toList</span>());
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">words</span>);                 <span class="cm">// [Hello, World, Java, Streams]</span>
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">[APPLE, BANANA, CHERRY, DATE]
+[Hello, World, Java, Streams]</div></div>
+
+<div class="sub">sorted, distinct, limit, skip, peek</div>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">OtherIntermediates.java</span></div>
+<div class="cb"><pre>
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">names</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="st">"Charlie"</span>,<span class="st">"Akshit"</span>,<span class="st">"Alice"</span>,<span class="st">"Bob"</span>,<span class="st">"Akshit"</span>);
+
+<span class="cm">// sorted(): natural ordering</span>
+<span class="va">names</span>.<span class="me">stream</span>().<span class="me">sorted</span>().<span class="me">forEach</span>(<span class="cl">System</span>.<span class="va">out</span>::<span class="me">println</span>);
+
+<span class="cm">// sorted(Comparator): custom by string length</span>
+<span class="va">names</span>.<span class="me">stream</span>().<span class="me">sorted</span>((a,b) <span class="ar">-&gt;</span> a.<span class="me">length</span>() - b.<span class="me">length</span>())
+    .<span class="me">forEach</span>(<span class="cl">System</span>.<span class="va">out</span>::<span class="me">println</span>);
+
+<span class="cm">// distinct(): remove duplicates (uses .equals())</span>
+<span class="va">names</span>.<span class="me">stream</span>().<span class="me">distinct</span>().<span class="me">forEach</span>(<span class="cl">System</span>.<span class="va">out</span>::<span class="me">println</span>); <span class="cm">// no duplicate Akshit</span>
+
+<span class="cm">// skip(n): discard first n elements</span>
+<span class="cl">Stream</span>.<span class="me">iterate</span>(<span class="nu">1</span>, x <span class="ar">-&gt;</span> x+<span class="nu">1</span>).<span class="me">skip</span>(<span class="nu">10</span>).<span class="me">limit</span>(<span class="nu">5</span>)
+    .<span class="me">forEach</span>(<span class="cl">System</span>.<span class="va">out</span>::<span class="me">println</span>);  <span class="cm">// 11 12 13 14 15</span>
+
+<span class="cm">// peek(): intermediate side-effect; great for debugging</span>
+<span class="va">names</span>.<span class="me">stream</span>()
+    .<span class="me">filter</span>(n <span class="ar">-&gt;</span> n.<span class="me">length</span>() &gt; <span class="nu">4</span>)
+    .<span class="me">peek</span>(n <span class="ar">-&gt;</span> <span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="st">"Passed filter: "</span> + n))
+    .<span class="me">map</span>(<span class="cl">String</span>::<span class="me">toUpperCase</span>)
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">toList</span>());
+</pre></div></div>
+<div class="box yellow"><span class="box-icon">&#11088;</span><div class="box-body"><span class="box-title">Stateful vs Stateless Operations</span><p class="box-text"><strong>Stateless</strong> (filter, map, peek): process each element independently; optimal for parallel streams. <strong>Stateful</strong> (sorted, distinct, limit): must see multiple elements before deciding &mdash; sorted() must see ALL elements. Stateful operations are less efficient in parallel mode.</p></div></div>
+</section>
+<!-- SECTION 12 -->
+<section class="section" id="s12">
+<div class="sec-header"><span class="sec-num yellow">12</span><span class="sec-title">Terminal Operations</span></div>
+<p>Terminal operations consume the stream and produce a result. After a terminal operation, the stream is <strong>closed</strong> &mdash; reusing it throws <code>IllegalStateException</code>.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">TerminalOps.java</span></div>
+<div class="cb"><pre>
+<span class="cl">List</span>&lt;<span class="cl">Integer</span>&gt; <span class="va">nums</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="nu">1</span>,<span class="nu">2</span>,<span class="nu">3</span>,<span class="nu">4</span>,<span class="nu">5</span>);
+
+<span class="cm">// collect() &mdash; materialise into a collection</span>
+<span class="cl">List</span>&lt;<span class="cl">Integer</span>&gt; <span class="va">list</span> = <span class="va">nums</span>.<span class="me">stream</span>().<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">toList</span>());
+
+<span class="cm">// forEach() &mdash; side effect per element (terminal)</span>
+<span class="va">nums</span>.<span class="me">stream</span>().<span class="me">forEach</span>(<span class="cl">System</span>.<span class="va">out</span>::<span class="me">println</span>);
+
+<span class="cm">// count() &mdash; number of elements</span>
+<span class="ty">long</span> <span class="va">c</span> = <span class="va">nums</span>.<span class="me">stream</span>().<span class="me">filter</span>(n <span class="ar">-&gt;</span> n % <span class="nu">2</span> == <span class="nu">0</span>).<span class="me">count</span>();  <span class="cm">// 2</span>
+
+<span class="cm">// reduce() &mdash; fold elements to a single value</span>
+<span class="cl">Optional</span>&lt;<span class="cl">Integer</span>&gt; <span class="va">sum</span> = <span class="va">nums</span>.<span class="me">stream</span>().<span class="me">reduce</span>((a,b) <span class="ar">-&gt;</span> a + b);
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">sum</span>.<span class="me">get</span>());                           <span class="cm">// 15</span>
+
+<span class="cm">// reduce with identity (no Optional needed)</span>
+<span class="ty">int</span> <span class="va">sum2</span> = <span class="va">nums</span>.<span class="me">stream</span>().<span class="me">reduce</span>(<span class="nu">0</span>, <span class="cl">Integer</span>::<span class="me">sum</span>);        <span class="cm">// 15</span>
+
+<span class="cm">// anyMatch / allMatch / noneMatch &mdash; short-circuit boolean checks</span>
+<span class="ty">boolean</span> <span class="va">hasEven</span> = <span class="va">nums</span>.<span class="me">stream</span>().<span class="me">anyMatch</span>(n <span class="ar">-&gt;</span> n%<span class="nu">2</span>==<span class="nu">0</span>);   <span class="cm">// true</span>
+<span class="ty">boolean</span> <span class="va">allPos</span>  = <span class="va">nums</span>.<span class="me">stream</span>().<span class="me">allMatch</span>(n <span class="ar">-&gt;</span> n&gt;<span class="nu">0</span>);     <span class="cm">// true</span>
+<span class="ty">boolean</span> <span class="va">noneNeg</span> = <span class="va">nums</span>.<span class="me">stream</span>().<span class="me">noneMatch</span>(n <span class="ar">-&gt;</span> n&lt;<span class="nu">0</span>);   <span class="cm">// true</span>
+
+<span class="cm">// findFirst() &mdash; first element in encounter order (returns Optional)</span>
+<span class="cl">Optional</span>&lt;<span class="cl">Integer</span>&gt; <span class="va">first</span> = <span class="va">nums</span>.<span class="me">stream</span>().<span class="me">filter</span>(n <span class="ar">-&gt;</span> n&gt;<span class="nu">3</span>).<span class="me">findFirst</span>();
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">first</span>.<span class="me">get</span>());                          <span class="cm">// 4</span>
+
+<span class="cm">// min() / max() &mdash; uses Comparator</span>
+<span class="cl">Optional</span>&lt;<span class="cl">Integer</span>&gt; <span class="va">max</span> = <span class="va">nums</span>.<span class="me">stream</span>().<span class="me">max</span>(<span class="cl">Comparator</span>.<span class="me">naturalOrder</span>());
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">max</span>.<span class="me">get</span>());                            <span class="cm">// 5</span>
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">15  15  true  true  true  4  5</div></div>
+
+<div class="sub">forEachOrdered &mdash; Preserve Order in Parallel Streams</div>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">ForEachOrdered.java</span></div>
+<div class="cb"><pre>
+<span class="cl">List</span>&lt;<span class="cl">Integer</span>&gt; <span class="va">list</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="nu">1</span>,<span class="nu">2</span>,<span class="nu">3</span>,<span class="nu">4</span>,<span class="nu">5</span>);
+
+<span class="cm">// forEach with parallel: arbitrary order (threads race)</span>
+<span class="va">list</span>.<span class="me">parallelStream</span>().<span class="me">forEach</span>(<span class="cl">System</span>.<span class="va">out</span>::<span class="me">println</span>);      <span class="cm">// 3 1 5 2 4 (varies)</span>
+
+<span class="cm">// forEachOrdered: encounter order preserved even in parallel</span>
+<span class="va">list</span>.<span class="me">parallelStream</span>().<span class="me">forEachOrdered</span>(<span class="cl">System</span>.<span class="va">out</span>::<span class="me">println</span>); <span class="cm">// 1 2 3 4 5 always</span>
+</pre></div></div>
+<div class="box orange"><span class="box-icon">&#9888;&#65039;</span><div class="box-body"><span class="box-title">Stream Cannot Be Reused!</span><p class="box-text">After any terminal operation the stream is closed. Storing a stream in a variable and reusing it throws <code>IllegalStateException: stream has already been operated upon or closed</code>. Always call <code>list.stream()</code> fresh each time.</p></div></div>
+</section>
+
+<!-- SECTION 13 -->
+<section class="section" id="s13">
+<div class="sec-header"><span class="sec-num green">13</span><span class="sec-title">Lazy Evaluation &amp; Stateful vs Stateless</span></div>
+<p>Intermediate operations build a <em>recipe</em>; they execute nothing. Only when a terminal operation is called does the pipeline run &mdash; and only as far as needed (short-circuit operations stop early).</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">LazyEval.java</span></div>
+<div class="cb"><pre>
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">names</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="st">"Anna"</span>,<span class="st">"Bob"</span>,<span class="st">"Charlie"</span>,<span class="st">"David"</span>);
+
+<span class="cm">// Build pipeline &mdash; NOTHING executes yet</span>
+<span class="cl">Stream</span>&lt;<span class="cl">String</span>&gt; <span class="va">pipe</span> = <span class="va">names</span>.<span class="me">stream</span>()
+    .<span class="me">filter</span>(n <span class="ar">-&gt;</span> {
+        <span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="st">"Filtering: "</span> + n);  <span class="cm">// lazy: not called yet</span>
+        <span class="kw">return</span> n.<span class="me">length</span>() &gt; <span class="nu">3</span>;
+    });
+
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="st">"-- Before terminal --"</span>);  <span class="cm">// prints FIRST</span>
+
+<span class="cm">// Terminal operation: NOW the filter lambda executes</span>
+<span class="ty">long</span> <span class="va">count</span> = <span class="va">pipe</span>.<span class="me">count</span>();
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="st">"count = "</span> + <span class="va">count</span>);
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">-- Before terminal --
+Filtering: Anna
+Filtering: Bob
+Filtering: Charlie
+Filtering: David
+count = 3</div></div>
+<div class="box blue"><span class="box-icon">&#128161;</span><div class="box-body"><span class="box-title">Why Laziness Matters in Practice</span><p class="box-text">For <code>findFirst()</code> or <code>limit(5)</code>, the pipeline stops as soon as the result is determined. Finding the first even number in a million-element stream stops at the very first even number found &mdash; not a million iterations. This makes stream pipelines extremely efficient.</p></div></div>
+</section>
+
+<!-- SECTION 14 -->
+<section class="section" id="s14">
+<div class="sec-header"><span class="sec-num purple">14</span><span class="sec-title">Parallel Streams</span></div>
+<p>A parallel stream splits the workload across multiple threads using the <strong>Fork/Join framework</strong>. Use it for large, CPU-intensive, independent operations. Call <code>list.parallelStream()</code> or add <code>.parallel()</code> to any stream.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">ParallelStream.java</span></div>
+<div class="cb"><pre>
+<span class="cm">// Sequential &mdash; one thread</span>
+<span class="ty">long</span> <span class="va">t1</span> = <span class="cl">System</span>.<span class="me">currentTimeMillis</span>();
+<span class="va">numbers</span>.<span class="me">stream</span>().<span class="me">map</span>(<span class="cl">Demo</span>::<span class="me">factorial</span>).<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">toList</span>());
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="st">"Sequential: "</span> + (<span class="cl">System</span>.<span class="me">currentTimeMillis</span>()-<span class="va">t1</span>) + <span class="st">"ms"</span>); <span class="cm">// ~150ms</span>
+
+<span class="cm">// Parallel &mdash; multiple threads work simultaneously</span>
+<span class="ty">long</span> <span class="va">t2</span> = <span class="cl">System</span>.<span class="me">currentTimeMillis</span>();
+<span class="va">numbers</span>.<span class="me">parallelStream</span>().<span class="me">map</span>(<span class="cl">Demo</span>::<span class="me">factorial</span>).<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">toList</span>());
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="st">"Parallel:   "</span> + (<span class="cl">System</span>.<span class="me">currentTimeMillis</span>()-<span class="va">t2</span>) + <span class="st">"ms"</span>); <span class="cm">// ~17ms</span>
+
+<span class="cm">// Convert parallel back to sequential when needed</span>
+<span class="va">numbers</span>.<span class="me">parallelStream</span>().<span class="me">sequential</span>().<span class="me">map</span>(<span class="cl">Demo</span>::<span class="me">factorial</span>);
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">Sequential: ~150ms
+Parallel:   ~17ms  (hardware dependent)</div></div>
+
+<div class="sub">Thread Safety: Shared Mutable State is Dangerous</div>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">ParallelSafety.java</span></div>
+<div class="cb"><pre>
+<span class="cm">// WRONG: race condition &mdash; result is unpredictable</span>
+<span class="ty">int</span>[] <span class="va">sum</span> = {<span class="nu">0</span>};
+<span class="cl">IntStream</span>.<span class="me">rangeClosed</span>(<span class="nu">1</span>,<span class="nu">100</span>).<span class="me">parallel</span>()
+    .<span class="me">forEach</span>(n <span class="ar">-&gt;</span> <span class="va">sum</span>[<span class="nu">0</span>] += n);        <span class="cm">// NOT thread-safe!</span>
+
+<span class="cm">// CORRECT option 1: AtomicInteger</span>
+<span class="cl">AtomicInteger</span> <span class="va">safe</span> = <span class="kw">new</span> <span class="cl">AtomicInteger</span>(<span class="nu">0</span>);
+<span class="cl">IntStream</span>.<span class="me">rangeClosed</span>(<span class="nu">1</span>,<span class="nu">100</span>).<span class="me">parallel</span>()
+    .<span class="me">forEach</span>(<span class="va">safe</span>::<span class="me">addAndGet</span>);
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">safe</span>.<span class="me">get</span>());         <span class="cm">// 5050</span>
+
+<span class="cm">// BEST option: reduce (no shared state at all)</span>
+<span class="ty">int</span> <span class="va">result</span> = <span class="cl">IntStream</span>.<span class="me">rangeClosed</span>(<span class="nu">1</span>,<span class="nu">100</span>).<span class="me">parallel</span>()
+    .<span class="me">reduce</span>(<span class="nu">0</span>, <span class="cl">Integer</span>::<span class="me">sum</span>);
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">result</span>);              <span class="cm">// 5050 always</span>
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">??? (wrong, varies)
+5050
+5050</div></div>
+<div class="box green"><span class="box-icon">&#9989;</span><div class="box-body"><span class="box-title">When to Use Parallel Streams</span><p class="box-text">Use when: dataset is large (10,000+ elements), operation is CPU-intensive, and elements are <strong>independent</strong> (each element's result does not depend on any other). Avoid for: small datasets (overhead outweighs benefit), I/O-bound tasks, and order-dependent computations like cumulative sums.</p></div></div>
+</section>
+<!-- SECTION 15 -->
+<section class="section" id="s15">
+<div class="sec-header"><span class="sec-num orange">15</span><span class="sec-title">Collectors &mdash; Complete Guide</span></div>
+<p>The <code>Collectors</code> utility class provides factory methods for the most common collection strategies. A Collector defines <em>how</em> to accumulate stream elements into a final result.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">CollectorsGuide.java</span></div>
+<div class="cb"><pre>
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">names</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="st">"Alice"</span>,<span class="st">"Bob"</span>,<span class="st">"Alice"</span>,<span class="st">"Charlie"</span>);
+<span class="cl">List</span>&lt;<span class="cl">Integer</span>&gt; <span class="va">nums</span>  = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="nu">1</span>,<span class="nu">2</span>,<span class="nu">3</span>,<span class="nu">4</span>,<span class="nu">5</span>);
+
+<span class="cm">// toList / toSet / toCollection</span>
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">asList</span>   = <span class="va">names</span>.<span class="me">stream</span>().<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">toList</span>());
+<span class="cl">Set</span>&lt;<span class="cl">String</span>&gt;  <span class="va">asSet</span>    = <span class="va">names</span>.<span class="me">stream</span>().<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">toSet</span>());  <span class="cm">// deduped</span>
+<span class="cl">LinkedList</span>&lt;<span class="cl">String</span>&gt; <span class="va">linked</span> = <span class="va">names</span>.<span class="me">stream</span>()
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">toCollection</span>(<span class="cl">LinkedList</span>::<span class="kw">new</span>));
+
+<span class="cm">// joining: concatenate with separator, prefix, suffix</span>
+<span class="cl">String</span> <span class="va">joined</span> = <span class="va">names</span>.<span class="me">stream</span>().<span class="me">distinct</span>()
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">joining</span>(<span class="st">", "</span>, <span class="st">"["</span>, <span class="st">"]"</span>));   <span class="cm">// [Alice, Bob, Charlie]</span>
+
+<span class="cm">// groupingBy (1 arg): group by classifier, values are lists</span>
+<span class="cl">Map</span>&lt;<span class="cl">Integer</span>, <span class="cl">List</span>&lt;<span class="cl">String</span>&gt;&gt; <span class="va">byLen</span> = <span class="va">names</span>.<span class="me">stream</span>()
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">groupingBy</span>(<span class="cl">String</span>::<span class="me">length</span>)); <span class="cm">// {3=[Bob], 5=[Alice, Alice], 7=[Charlie]}</span>
+
+<span class="cm">// groupingBy (2 args): with downstream collector</span>
+<span class="cl">Map</span>&lt;<span class="cl">Integer</span>, <span class="cl">Long</span>&gt; <span class="va">countByLen</span> = <span class="va">names</span>.<span class="me">stream</span>()
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">groupingBy</span>(<span class="cl">String</span>::<span class="me">length</span>, <span class="cl">Collectors</span>.<span class="me">counting</span>()));
+
+<span class="cm">// groupingBy (3 args): with Map factory (e.g. TreeMap for sorted keys)</span>
+<span class="cl">Map</span>&lt;<span class="cl">Integer</span>, <span class="cl">List</span>&lt;<span class="cl">String</span>&gt;&gt; <span class="va">sortedMap</span> = <span class="va">names</span>.<span class="me">stream</span>()
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">groupingBy</span>(<span class="cl">String</span>::<span class="me">length</span>, <span class="cl">TreeMap</span>::<span class="kw">new</span>, <span class="cl">Collectors</span>.<span class="me">toList</span>()));
+
+<span class="cm">// partitioningBy: always two groups &mdash; true and false</span>
+<span class="cl">Map</span>&lt;<span class="cl">Boolean</span>, <span class="cl">List</span>&lt;<span class="cl">String</span>&gt;&gt; <span class="va">parts</span> = <span class="va">names</span>.<span class="me">stream</span>()
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">partitioningBy</span>(n <span class="ar">-&gt;</span> n.<span class="me">length</span>() &gt; <span class="nu">3</span>));
+
+<span class="cm">// summarizingInt: count, sum, min, max, average at once</span>
+<span class="cl">IntSummaryStatistics</span> <span class="va">stats</span> = <span class="va">nums</span>.<span class="me">stream</span>()
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">summarizingInt</span>(x <span class="ar">-&gt;</span> x));
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">stats</span>.<span class="me">getCount</span>()+<span class="st">" sum="</span>+<span class="va">stats</span>.<span class="me">getSum</span>()+<span class="st">" avg="</span>+<span class="va">stats</span>.<span class="me">getAverage</span>());
+
+<span class="cm">// toMap with merge function (REQUIRED when duplicates possible)</span>
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">words</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="st">"apple"</span>,<span class="st">"banana"</span>,<span class="st">"apple"</span>);
+<span class="cl">Map</span>&lt;<span class="cl">String</span>,<span class="cl">Long</span>&gt; <span class="va">freq</span> = <span class="va">words</span>.<span class="me">stream</span>()
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">toMap</span>(
+        w <span class="ar">-&gt;</span> w,             <span class="cm">// key: the word</span>
+        w <span class="ar">-&gt;</span> <span class="nu">1L</span>,            <span class="cm">// initial value</span>
+        (old, n) <span class="ar">-&gt;</span> old+n  <span class="cm">// merge: add when duplicate key</span>
+    ));
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">freq</span>);     <span class="cm">// {banana=1, apple=2}</span>
+
+<span class="cm">// mapping: transform elements BEFORE collecting (mini map inside a groupingBy)</span>
+<span class="cm">// Collectors.mapping(mapper, downstream)</span>
+<span class="cl">Map</span>&lt;<span class="cl">Integer</span>, <span class="cl">List</span>&lt;<span class="cl">String</span>&gt;&gt; <span class="va">upperByLen</span> = <span class="va">names</span>.<span class="me">stream</span>()
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">groupingBy</span>(<span class="cl">String</span>::<span class="me">length</span>,
+        <span class="cl">Collectors</span>.<span class="me">mapping</span>(<span class="cl">String</span>::<span class="me">toUpperCase</span>, <span class="cl">Collectors</span>.<span class="me">toList</span>())));
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">5 sum=15 avg=3.0
+{banana=1, apple=2}</div></div>
+<div class="box orange"><span class="box-icon">&#9888;&#65039;</span><div class="box-body"><span class="box-title">toMap() Duplicate Key Exception</span><p class="box-text">Without a merge function, <code>toMap()</code> throws <code>IllegalStateException: Duplicate key</code> if two elements map to the same key. Always provide the third argument when duplicates are possible.</p></div></div>
+</section>
+
+<!-- SECTION 16 -->
+<section class="section" id="s16">
+<div class="sec-header"><span class="sec-num">16</span><span class="sec-title">Primitive Streams &mdash; IntStream, LongStream, DoubleStream</span></div>
+<p>Using <code>Stream&lt;Integer&gt;</code> boxes every <code>int</code> into an <code>Integer</code> object &mdash; unnecessary heap allocation. Java provides specialised primitive streams that avoid boxing and offer numeric-specific operations directly: <code>sum()</code>, <code>average()</code>, <code>min()</code>, <code>max()</code>, <code>summaryStatistics()</code>.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">PrimitiveStreams.java</span></div>
+<div class="cb"><pre>
+<span class="cm">// range (end exclusive) and rangeClosed (end inclusive)</span>
+<span class="cl">IntStream</span>.<span class="me">range</span>(<span class="nu">1</span>,<span class="nu">5</span>).<span class="me">forEach</span>(<span class="cl">System</span>.<span class="va">out</span>::<span class="me">println</span>);         <span class="cm">// 1 2 3 4</span>
+<span class="cl">IntStream</span>.<span class="me">rangeClosed</span>(<span class="nu">1</span>,<span class="nu">5</span>).<span class="me">forEach</span>(<span class="cl">System</span>.<span class="va">out</span>::<span class="me">println</span>);   <span class="cm">// 1 2 3 4 5</span>
+
+<span class="cm">// Numeric aggregate operations &mdash; no boxing</span>
+<span class="ty">int</span>    <span class="va">sum</span> = <span class="cl">IntStream</span>.<span class="me">rangeClosed</span>(<span class="nu">1</span>,<span class="nu">10</span>).<span class="me">sum</span>();
+<span class="ty">double</span> <span class="va">avg</span> = <span class="cl">IntStream</span>.<span class="me">rangeClosed</span>(<span class="nu">1</span>,<span class="nu">10</span>).<span class="me">average</span>().<span class="me">getAsDouble</span>();
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(sum + <span class="st">" / "</span> + avg);                   <span class="cm">// 55 / 5.5</span>
+
+<span class="cm">// summaryStatistics: all stats at once</span>
+<span class="cl">IntSummaryStatistics</span> <span class="va">stats</span> = <span class="cl">IntStream</span>.<span class="me">rangeClosed</span>(<span class="nu">1</span>,<span class="nu">10</span>).<span class="me">summaryStatistics</span>();
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">stats</span>);                               <span class="cm">// count=10, sum=55, min=1, average=5.5, max=10</span>
+
+<span class="cm">// boxing: IntStream -&gt; Stream&lt;Integer&gt;</span>
+<span class="cl">Stream</span>&lt;<span class="cl">Integer</span>&gt; <span class="va">boxed</span> = <span class="cl">IntStream</span>.<span class="me">range</span>(<span class="nu">1</span>,<span class="nu">5</span>).<span class="me">boxed</span>();
+
+<span class="cm">// mapToInt: Stream&lt;T&gt; -&gt; IntStream (most common conversion)</span>
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">ws</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="st">"Hi"</span>,<span class="st">"Hello"</span>,<span class="st">"Hey"</span>);
+<span class="ty">int</span> <span class="va">totalLen</span> = <span class="va">ws</span>.<span class="me">stream</span>().<span class="me">mapToInt</span>(<span class="cl">String</span>::<span class="me">length</span>).<span class="me">sum</span>();  <span class="cm">// 2+5+3 = 10</span>
+
+<span class="cm">// Random streams &mdash; 5 random ints between 1 and 99</span>
+<span class="kw">new</span> <span class="cl">Random</span>().<span class="me">ints</span>(<span class="nu">5</span>, <span class="nu">1</span>, <span class="nu">100</span>).<span class="me">forEach</span>(<span class="cl">System</span>.<span class="va">out</span>::<span class="me">println</span>);
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">55 / 5.5
+IntSummaryStatistics{count=10, sum=55, min=1, average=5.500000, max=10}
+10</div></div>
+<div class="box blue"><span class="box-icon">&#128161;</span><div class="box-body"><span class="box-title">mapToInt is Your Friend</span><p class="box-text">Whenever you have <code>Stream&lt;SomeObject&gt;</code> and need to compute numeric aggregates (sum, average, etc.), use <code>.mapToInt(obj -&gt; obj.getScore())</code> to get an IntStream and then call <code>.sum()</code> or <code>.summaryStatistics()</code> directly. Much cleaner than boxing to Integer and using Collectors.summingInt.</p></div></div>
+</section>
+<!-- SECTION 17 EXERCISES -->
+<section class="section" id="s17">
+<div class="sec-header"><span class="sec-num green">17</span><span class="sec-title">Exercises (8 Problems with Solutions)</span></div>
+
+<div class="ec">
+<div class="en">Exercise 1 &mdash; Beginner</div>
+<div class="et">Filter Strings by Length and Uppercase</div>
+<div class="em">Concepts: filter, map, collect</div>
+<p class="ep">Given <code>["apple","kiwi","banana","fig","mango","plum"]</code>, collect all fruits whose name length is greater than 4, converted to upper case.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">Ex1.java</span></div>
+<div class="cb"><pre>
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">fruits</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="st">"apple"</span>,<span class="st">"kiwi"</span>,<span class="st">"banana"</span>,<span class="st">"fig"</span>,<span class="st">"mango"</span>,<span class="st">"plum"</span>);
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">r</span> = <span class="va">fruits</span>.<span class="me">stream</span>()
+    .<span class="me">filter</span>(f <span class="ar">-&gt;</span> f.<span class="me">length</span>() &gt; <span class="nu">4</span>)        <span class="cm">// apple(5), banana(6), mango(5) pass</span>
+    .<span class="me">map</span>(<span class="cl">String</span>::<span class="me">toUpperCase</span>)            <span class="cm">// convert each to upper case</span>
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">toList</span>());       <span class="cm">// materialise</span>
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">r</span>);
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">[APPLE, BANANA, MANGO]</div></div>
+<div class="ew"><strong>Why it works:</strong> filter() is lazy &mdash; it marks elements to keep. map() transforms surviving elements. collect() triggers the pipeline and gathers results into a List.</div>
+</div>
+
+<div class="ec">
+<div class="en">Exercise 2 &mdash; Beginner</div>
+<div class="et">Sum of Squares of Even Numbers</div>
+<div class="em">Concepts: IntStream, filter, map, sum()</div>
+<p class="ep">Given 1&ndash;10, compute the sum of squares of only even numbers.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">Ex2.java</span></div>
+<div class="cb"><pre>
+<span class="ty">int</span> <span class="va">result</span> = <span class="cl">IntStream</span>.<span class="me">rangeClosed</span>(<span class="nu">1</span>, <span class="nu">10</span>)   <span class="cm">// 1,2,...,10</span>
+    .<span class="me">filter</span>(n <span class="ar">-&gt;</span> n % <span class="nu">2</span> == <span class="nu">0</span>)               <span class="cm">// evens: 2,4,6,8,10</span>
+    .<span class="me">map</span>(n <span class="ar">-&gt;</span> n * n)                        <span class="cm">// squares: 4,16,36,64,100</span>
+    .<span class="me">sum</span>();                                 <span class="cm">// 4+16+36+64+100</span>
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">result</span>);                <span class="cm">// 220</span>
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">220</div></div>
+<div class="ew"><strong>Why it works:</strong> IntStream avoids boxing. <code>sum()</code> is a terminal operation specific to primitive streams &mdash; more concise than <code>reduce(0, Integer::sum)</code>.</div>
+</div>
+
+<div class="ec">
+<div class="en">Exercise 3 &mdash; Intermediate</div>
+<div class="et">Word Frequency Map</div>
+<div class="em">Concepts: Arrays.stream, split, groupingBy, counting</div>
+<p class="ep">Given <code>"the quick brown fox the fox"</code>, produce a Map of each word to its frequency.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">Ex3.java</span></div>
+<div class="cb"><pre>
+<span class="cl">String</span> <span class="va">sentence</span> = <span class="st">"the quick brown fox the fox"</span>;
+<span class="cl">Map</span>&lt;<span class="cl">String</span>,<span class="cl">Long</span>&gt; <span class="va">freq</span> = <span class="cl">Arrays</span>.<span class="me">stream</span>(<span class="va">sentence</span>.<span class="me">split</span>(<span class="st">" "</span>))  <span class="cm">// String[] -&gt; Stream&lt;String&gt;</span>
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">groupingBy</span>(
+        w <span class="ar">-&gt;</span> w,                     <span class="cm">// key: the word itself</span>
+        <span class="cl">Collectors</span>.<span class="me">counting</span>()       <span class="cm">// value: how many in group</span>
+    ));
+<span class="va">freq</span>.<span class="me">forEach</span>((w,c) <span class="ar">-&gt;</span> <span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(w+<span class="st">" = "</span>+c));
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">the = 2  quick = 1  brown = 1  fox = 2</div></div>
+<div class="ew"><strong>Why it works:</strong> groupingBy clusters same-key elements into groups; counting() is the downstream collector that counts per group.</div>
+</div>
+
+<div class="ec">
+<div class="en">Exercise 4 &mdash; Intermediate</div>
+<div class="et">Partition Pass/Fail</div>
+<div class="em">Concepts: partitioningBy</div>
+<p class="ep">Given scores <code>[88, 45, 72, 55, 91, 38, 65]</code>, partition into passing (&ge; 60) and failing (&lt; 60).</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">Ex4.java</span></div>
+<div class="cb"><pre>
+<span class="cl">List</span>&lt;<span class="cl">Integer</span>&gt; <span class="va">scores</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="nu">88</span>,<span class="nu">45</span>,<span class="nu">72</span>,<span class="nu">55</span>,<span class="nu">91</span>,<span class="nu">38</span>,<span class="nu">65</span>);
+<span class="cl">Map</span>&lt;<span class="cl">Boolean</span>,<span class="cl">List</span>&lt;<span class="cl">Integer</span>&gt;&gt; <span class="va">graded</span> = <span class="va">scores</span>.<span class="me">stream</span>()
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">partitioningBy</span>(s <span class="ar">-&gt;</span> s &gt;= <span class="nu">60</span>));  <span class="cm">// true=pass, false=fail</span>
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="st">"Pass: "</span> + <span class="va">graded</span>.<span class="me">get</span>(<span class="kw">true</span>));
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="st">"Fail: "</span> + <span class="va">graded</span>.<span class="me">get</span>(<span class="kw">false</span>));
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">Pass: [88, 72, 91, 65]
+Fail: [45, 55, 38]</div></div>
+<div class="ew"><strong>Why it works:</strong> partitioningBy always produces exactly two groups. It's cleaner than groupingBy for strictly binary criteria.</div>
+</div>
+
+<div class="ec">
+<div class="en">Exercise 5 &mdash; Intermediate</div>
+<div class="et">Flatten and Deduplicate Tags</div>
+<div class="em">Concepts: flatMap, distinct, sorted, collect</div>
+<p class="ep">Given <code>[["java","streams"],["java","lambda"],["streams","optional"]]</code>, produce a sorted, unique list of all tags.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">Ex5.java</span></div>
+<div class="cb"><pre>
+<span class="cl">List</span>&lt;<span class="cl">List</span>&lt;<span class="cl">String</span>&gt;&gt; <span class="va">all</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(
+    <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="st">"java"</span>,<span class="st">"streams"</span>),
+    <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="st">"java"</span>,<span class="st">"lambda"</span>),
+    <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="st">"streams"</span>,<span class="st">"optional"</span>)
+);
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">tags</span> = <span class="va">all</span>.<span class="me">stream</span>()
+    .<span class="me">flatMap</span>(<span class="cl">Collection</span>::<span class="me">stream</span>)   <span class="cm">// flatten all inner lists into one stream</span>
+    .<span class="me">distinct</span>()                      <span class="cm">// remove duplicates</span>
+    .<span class="me">sorted</span>()                        <span class="cm">// alphabetical order</span>
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">toList</span>());
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">tags</span>);
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">[java, lambda, optional, streams]</div></div>
+<div class="ew"><strong>Why it works:</strong> flatMap collapses List&lt;List&lt;T&gt;&gt; into Stream&lt;T&gt;. distinct() uses .equals() for deduplication. sorted() applies natural (alphabetical) ordering.</div>
+</div>
+
+<div class="ec">
+<div class="en">Exercise 6 &mdash; Intermediate</div>
+<div class="et">Find the Longest Word</div>
+<div class="em">Concepts: reduce, max with Comparator, Optional</div>
+<p class="ep">From <code>["cat","elephant","dog","hippopotamus","ant"]</code>, find the longest word.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">Ex6.java</span></div>
+<div class="cb"><pre>
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">words</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="st">"cat"</span>,<span class="st">"elephant"</span>,<span class="st">"dog"</span>,<span class="st">"hippopotamus"</span>,<span class="st">"ant"</span>);
+
+<span class="cm">// Using max() with Comparator</span>
+<span class="va">words</span>.<span class="me">stream</span>()
+    .<span class="me">max</span>(<span class="cl">Comparator</span>.<span class="me">comparingInt</span>(<span class="cl">String</span>::<span class="me">length</span>))  <span class="cm">// element with max length</span>
+    .<span class="me">ifPresent</span>(<span class="cl">System</span>.<span class="va">out</span>::<span class="me">println</span>);               <span class="cm">// hippopotamus</span>
+
+<span class="cm">// Using reduce (keeps the longer of each pair)</span>
+<span class="va">words</span>.<span class="me">stream</span>()
+    .<span class="me">reduce</span>((a, b) <span class="ar">-&gt;</span> a.<span class="me">length</span>() &gt;= b.<span class="me">length</span>() ? a : b)
+    .<span class="me">ifPresent</span>(<span class="cl">System</span>.<span class="va">out</span>::<span class="me">println</span>);               <span class="cm">// hippopotamus</span>
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">hippopotamus
+hippopotamus</div></div>
+<div class="ew"><strong>Why it works:</strong> Both return Optional to safely handle empty streams. max() is more readable; reduce() is more flexible for custom accumulation logic.</div>
+</div>
+
+<div class="ec">
+<div class="en">Exercise 7 &mdash; Advanced</div>
+<div class="et">Group Employees by Department, Collect Names Only</div>
+<div class="em">Concepts: groupingBy + Collectors.mapping downstream</div>
+<p class="ep">Given employees with name, dept, and salary, group by department and collect just the names per department (not full Employee objects).</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">Ex7.java</span></div>
+<div class="cb"><pre>
+<span class="kw">record</span> <span class="cl">Employee</span>(<span class="cl">String</span> <span class="va">name</span>, <span class="cl">String</span> <span class="va">dept</span>, <span class="ty">double</span> <span class="va">salary</span>) {}
+
+<span class="cl">List</span>&lt;<span class="cl">Employee</span>&gt; <span class="va">emps</span> = <span class="cl">List</span>.<span class="me">of</span>(
+    <span class="kw">new</span> <span class="cl">Employee</span>(<span class="st">"Alice"</span>,<span class="st">"Eng"</span>,<span class="nu">90000</span>), <span class="kw">new</span> <span class="cl">Employee</span>(<span class="st">"Bob"</span>,<span class="st">"Mkt"</span>,<span class="nu">70000</span>),
+    <span class="kw">new</span> <span class="cl">Employee</span>(<span class="st">"Charlie"</span>,<span class="st">"Eng"</span>,<span class="nu">85000</span>), <span class="kw">new</span> <span class="cl">Employee</span>(<span class="st">"Diana"</span>,<span class="st">"Mkt"</span>,<span class="nu">75000</span>)
+);
+
+<span class="cl">Map</span>&lt;<span class="cl">String</span>,<span class="cl">List</span>&lt;<span class="cl">String</span>&gt;&gt; <span class="va">byDept</span> = <span class="va">emps</span>.<span class="me">stream</span>()
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">groupingBy</span>(
+        <span class="cl">Employee</span>::<span class="me">dept</span>,                         <span class="cm">// group by department</span>
+        <span class="cl">Collectors</span>.<span class="me">mapping</span>(                      <span class="cm">// transform inside the group</span>
+            <span class="cl">Employee</span>::<span class="me">name</span>,                      <span class="cm">// extract just the name</span>
+            <span class="cl">Collectors</span>.<span class="me">toList</span>()                  <span class="cm">// collect names into a list</span>
+        )
+    ));
+<span class="va">byDept</span>.<span class="me">forEach</span>((d,n) <span class="ar">-&gt;</span> <span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(d+<span class="st">": "</span>+n));
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">Eng: [Alice, Charlie]
+Mkt: [Bob, Diana]</div></div>
+<div class="ew"><strong>Why it works:</strong> Collectors.mapping() applies a transformation inside a downstream collector &mdash; like a map() step nested inside groupingBy, avoiding a separate map() intermediate operation.</div>
+</div>
+
+<div class="ec">
+<div class="en">Exercise 8 &mdash; Advanced</div>
+<div class="et">Top 3 Highest-Paid Employees</div>
+<div class="em">Concepts: sorted (reversed Comparator), limit, map, collect</div>
+<p class="ep">From the same employee list, extract the names of the 3 highest-paid employees in descending order.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">Ex8.java</span></div>
+<div class="cb"><pre>
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">top3</span> = <span class="va">emps</span>.<span class="me">stream</span>()
+    .<span class="me">sorted</span>(<span class="cl">Comparator</span>.<span class="me">comparingDouble</span>(<span class="cl">Employee</span>::<span class="me">salary</span>).<span class="me">reversed</span>()) <span class="cm">// highest first</span>
+    .<span class="me">limit</span>(<span class="nu">3</span>)                                  <span class="cm">// take first 3</span>
+    .<span class="me">map</span>(<span class="cl">Employee</span>::<span class="me">name</span>)                       <span class="cm">// extract name</span>
+    .<span class="me">collect</span>(<span class="cl">Collectors</span>.<span class="me">toList</span>());
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">top3</span>);
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">[Alice, Diana, Charlie]</div></div>
+<div class="ew"><strong>Why it works:</strong> reversed() flips the Comparator so highest salary comes first. limit(3) short-circuits the pipeline &mdash; efficient even on large lists. map() extracts names after sorting.</div>
+</div>
+</section>
+<!-- SECTION 18 INTERVIEW QUESTIONS -->
+<section class="section" id="s18">
+<div class="sec-header"><span class="sec-num yellow">18</span><span class="sec-title">Interview Questions (10 Q&amp;A)</span></div>
+
+<div class="iq">
+<div class="iq-q">Q1. What is a Stream in Java 8? How is it different from a Collection?</div>
+<p class="iq-a">A Stream is a sequence of elements supporting aggregate operations in a declarative, functional style. A Collection <em>stores</em> data; a Stream <em>processes</em> data. Streams are lazy (nothing runs until a terminal op), can be infinite, and can only be consumed once. Collections can be iterated multiple times and hold the data persistently in memory.</p>
+<div class="box yellow"><span class="box-icon">&#11088;</span><div class="box-body"><span class="box-title">Asked Very Frequently</span><p class="box-text">This is asked in virtually every Java backend interview. Know this distinction cold: Collection = storage, Stream = computation pipeline.</p></div></div>
+</div>
+
+<div class="iq">
+<div class="iq-q">Q2. What is the difference between intermediate and terminal operations?</div>
+<p class="iq-a">Intermediate operations (filter, map, sorted) are lazy &mdash; they return a new Stream and execute nothing until a terminal operation is called. Terminal operations (collect, count, forEach) are eager &mdash; they trigger the entire pipeline and produce a final result or side effect. After a terminal operation, the stream is closed and cannot be reused.</p>
+<div class="box yellow"><span class="box-icon">&#11088;</span><div class="box-body"><span class="box-title">Asked Very Frequently</span><p class="box-text">Follow-up: "Name 5 intermediate and 5 terminal operations." Common answer: Intermediate &mdash; filter, map, flatMap, sorted, distinct. Terminal &mdash; collect, forEach, count, reduce, findFirst.</p></div></div>
+</div>
+
+<div class="iq">
+<div class="iq-q">Q3. What is a Functional Interface? Give built-in examples.</div>
+<p class="iq-a">A functional interface has exactly one abstract method. The <code>@FunctionalInterface</code> annotation is optional but enforces this at compile time. Built-in examples in <code>java.util.function</code>: <code>Predicate&lt;T&gt;</code> (test), <code>Function&lt;T,R&gt;</code> (apply), <code>Consumer&lt;T&gt;</code> (accept), <code>Supplier&lt;T&gt;</code> (get). From JDK: <code>Runnable</code>, <code>Callable</code>, <code>Comparator</code>.</p>
+</div>
+
+<div class="iq">
+<div class="iq-q">Q4. What is the difference between map() and flatMap()?</div>
+<p class="iq-a">map() is one-to-one &mdash; each element produces exactly one result. flatMap() is one-to-many &mdash; each element produces a Stream, and all those streams are flattened into one. Use flatMap when the mapping function returns a Collection or Stream per element (e.g., splitting sentences into words, or getting orders from a list of customers).</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">MapVsFlatMap.java</span></div>
+<div class="cb"><pre>
+<span class="cm">// map: Stream&lt;String&gt; -&gt; Stream&lt;Integer&gt; (1-to-1)</span>
+<span class="va">names</span>.<span class="me">stream</span>().<span class="me">map</span>(<span class="cl">String</span>::<span class="me">length</span>);
+
+<span class="cm">// flatMap: Stream&lt;List&lt;String&gt;&gt; -&gt; Stream&lt;String&gt; (1-to-many, then flattened)</span>
+<span class="va">nested</span>.<span class="me">stream</span>().<span class="me">flatMap</span>(<span class="cl">Collection</span>::<span class="me">stream</span>);
+</pre></div></div>
+<div class="box yellow"><span class="box-icon">&#11088;</span><div class="box-body"><span class="box-title">Tricky Follow-up</span><p class="box-text">"What happens if the mapper in flatMap returns null?" &mdash; It throws NullPointerException. Always return <code>Stream.empty()</code> instead of null: <code>x -&gt; x == null ? Stream.empty() : x.stream()</code>.</p></div></div>
+</div>
+
+<div class="iq">
+<div class="iq-q">Q5. What is lazy evaluation in streams and why does it matter?</div>
+<p class="iq-a">Intermediate operations are not executed until a terminal operation is invoked. This allows the JVM to optimise the pipeline &mdash; short-circuit operations (findFirst, limit, anyMatch) can terminate early without processing all elements. For infinite streams, laziness is what prevents infinite loops.</p>
+</div>
+
+<div class="iq">
+<div class="iq-q">Q6. What is the difference between findFirst() and findAny()?</div>
+<p class="iq-a">findFirst() returns the first element in <em>encounter order</em> &mdash; deterministic for both sequential and parallel streams. findAny() may return any element and is non-deterministic in parallel streams (whichever thread finishes first), but it is faster because threads don't need to coordinate on ordering.</p>
+</div>
+
+<div class="iq">
+<div class="iq-q">Q7. Why can't you reuse a stream after a terminal operation?</div>
+<p class="iq-a">A Stream is a one-pass abstraction &mdash; it does not store data. After a terminal operation the stream is closed (all internal resources released). Reusing it throws <code>IllegalStateException: stream has already been operated upon or closed</code>. The fix is simple: call <code>list.stream()</code> fresh each time you need a new stream from the same source.</p>
+</div>
+
+<div class="iq">
+<div class="iq-q">Q8. What are the risks of using parallel streams with shared mutable state?</div>
+<p class="iq-a">Multiple threads updating the same variable simultaneously create race conditions &mdash; the result is wrong and non-deterministic. Lambda variables must be effectively final (compiler enforcement). Use thread-safe alternatives like <code>AtomicInteger</code>, or better: avoid shared state entirely by using <code>reduce()</code> or <code>collect()</code> which accumulate results without shared mutation.</p>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">SafeParallel.java</span></div>
+<div class="cb"><pre>
+<span class="cm">// WRONG &mdash; race condition, wrong answer</span>
+<span class="ty">int</span>[] <span class="va">sum</span> = {<span class="nu">0</span>};
+<span class="va">stream</span>.<span class="me">parallel</span>().<span class="me">forEach</span>(n <span class="ar">-&gt;</span> <span class="va">sum</span>[<span class="nu">0</span>] += n);
+
+<span class="cm">// BEST &mdash; no shared state, always correct</span>
+<span class="ty">int</span> <span class="va">result</span> = <span class="cl">IntStream</span>.<span class="me">rangeClosed</span>(<span class="nu">1</span>,<span class="nu">100</span>).<span class="me">parallel</span>().<span class="me">reduce</span>(<span class="nu">0</span>, <span class="cl">Integer</span>::<span class="me">sum</span>);
+</pre></div></div>
+</div>
+
+<div class="iq">
+<div class="iq-q">Q9. What is the difference between Collectors.groupingBy() and partitioningBy()?</div>
+<p class="iq-a">groupingBy() groups elements into a <code>Map&lt;K, List&lt;T&gt;&gt;</code> &mdash; the key can be any type and the number of groups is variable. partitioningBy() always produces exactly <em>two</em> groups (<code>Map&lt;Boolean, List&lt;T&gt;&gt;</code>) based on a Predicate &mdash; a <code>true</code> group and a <code>false</code> group. Use partitioningBy when the criterion is strictly binary.</p>
+<div class="box yellow"><span class="box-icon">&#11088;</span><div class="box-body"><span class="box-title">Asked Very Frequently</span><p class="box-text">Key insight: partitioningBy <strong>always creates both groups</strong> (even if empty). groupingBy only creates groups that have at least one member.</p></div></div>
+</div>
+
+<div class="iq">
+<div class="iq-q">Q10. Output-based: What does this code print? (Trace through carefully)</div>
+<div class="cw"><div class="ch"><div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div><span class="fl">OutputQ.java</span></div>
+<div class="cb"><pre>
+<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; <span class="va">names</span> = <span class="cl">Arrays</span>.<span class="me">asList</span>(<span class="st">"Bob"</span>,<span class="st">"Alice"</span>,<span class="st">"Charlie"</span>,<span class="st">"Dan"</span>);
+<span class="cl">String</span> <span class="va">r</span> = <span class="va">names</span>.<span class="me">stream</span>()
+    .<span class="me">filter</span>(n <span class="ar">-&gt;</span> n.<span class="me">length</span>() &gt; <span class="nu">4</span>)    <span class="cm">// step 1: keep &gt;4 chars</span>
+    .<span class="me">map</span>(<span class="cl">String</span>::<span class="me">toUpperCase</span>)        <span class="cm">// step 2: upper case</span>
+    .<span class="me">skip</span>(<span class="nu">1</span>)                          <span class="cm">// step 3: skip first result</span>
+    .<span class="me">findFirst</span>()                       <span class="cm">// step 4: return first remaining</span>
+    .<span class="me">orElse</span>(<span class="st">"none"</span>);
+<span class="cl">System</span>.<span class="va">out</span>.<span class="me">println</span>(<span class="va">r</span>);
+</pre></div></div>
+<div class="out"><div class="ol">&#9654; OUTPUT</div><div class="ot">CHARLIE</div></div>
+<p class="iq-a">Trace: filter keeps [Alice(5), Charlie(7)]; map produces [ALICE, CHARLIE]; skip(1) drops ALICE; findFirst() returns CHARLIE. Bob(3) and Dan(3) are filtered out immediately.</p>
+<div class="box yellow"><span class="box-icon">&#11088;</span><div class="box-body"><span class="box-title">Asked Very Frequently</span><p class="box-text">Important insight: the pipeline is NOT stage-by-stage (first all filter, then all map). It is element-by-element. Each element flows through all stages before the next element is processed. Bob tries filter &rarr; fails &rarr; done. Alice tries filter &rarr; passes &rarr; uppercased ALICE &rarr; skip drops it. Charlie tries filter &rarr; passes &rarr; CHARLIE &rarr; returned by findFirst.</p></div></div>
+</div>
+</section>
+<!-- SECTION 19 SUMMARY -->
+<section class="section" id="s19">
+<div class="sec-header"><span class="sec-num green">19</span><span class="sec-title">Summary &amp; Cheat Sheet</span></div>
+
+<div class="sub">Key Concepts Table</div>
+<div class="tw"><table>
+<thead><tr><th>Concept</th><th>One-Line Rule</th></tr></thead>
+<tbody>
+<tr><td>Lambda</td><td><code>(params) -&gt; expression</code>; anonymous function; implements a functional interface in one expression</td></tr>
+<tr><td>Functional Interface</td><td>Exactly 1 abstract method; @FunctionalInterface annotation recommended</td></tr>
+<tr><td>Predicate&lt;T&gt;</td><td><code>boolean test(T t)</code>; combine with <code>.and()</code> <code>.or()</code> <code>.negate()</code></td></tr>
+<tr><td>Function&lt;T,R&gt;</td><td><code>R apply(T t)</code>; chain with <code>.andThen()</code> (this first) or <code>.compose()</code> (arg first)</td></tr>
+<tr><td>Consumer&lt;T&gt;</td><td><code>void accept(T t)</code>; side effect only; chain with <code>.andThen()</code>; no compose</td></tr>
+<tr><td>Supplier&lt;T&gt;</td><td><code>T get()</code>; takes nothing; use for lazy init, factories, value generation</td></tr>
+<tr><td>UnaryOperator&lt;T&gt;</td><td>Special <code>Function&lt;T,T&gt;</code> when input and output are the same type</td></tr>
+<tr><td>BinaryOperator&lt;T&gt;</td><td>Special <code>BiFunction&lt;T,T,T&gt;</code>; used in reduce() calls</td></tr>
+<tr><td>Method Reference</td><td><code>ClassName::method</code>; shorthand when lambda just calls one method</td></tr>
+<tr><td>Stream</td><td>Sequence of elements for lazy functional pipeline; one-time-use; three stages</td></tr>
+<tr><td>Intermediate Op</td><td>Lazy; returns Stream; filter, map, flatMap, sorted, distinct, limit, skip, peek</td></tr>
+<tr><td>Terminal Op</td><td>Eager; closes stream; collect, forEach, count, reduce, min/max, anyMatch, findFirst</td></tr>
+<tr><td>Collectors</td><td>Utility class; toList, toSet, groupingBy, partitioningBy, joining, toMap, counting</td></tr>
+<tr><td>Lazy Evaluation</td><td>Intermediate ops build a recipe; execute ONLY when terminal op is called</td></tr>
+<tr><td>Short-Circuit</td><td>anyMatch, findFirst, limit stop processing as soon as result is determined</td></tr>
+<tr><td>Parallel Stream</td><td>Uses Fork/Join; faster for large, CPU-intensive, independent tasks only</td></tr>
+<tr><td>Primitive Streams</td><td>IntStream/LongStream/DoubleStream; avoid boxing; have sum/avg/min/max directly</td></tr>
+</tbody>
+</table></div>
+
+<div class="sub">Syntax Reference</div>
+<div class="tw"><table>
+<thead><tr><th>Feature</th><th>Syntax</th></tr></thead>
+<tbody>
+<tr><td>Lambda</td><td><code>(a, b) -&gt; a + b</code></td></tr>
+<tr><td>Method ref &mdash; static</td><td><code>Integer::parseInt</code></td></tr>
+<tr><td>Method ref &mdash; arbitrary instance</td><td><code>String::toUpperCase</code></td></tr>
+<tr><td>Method ref &mdash; specific instance</td><td><code>System.out::println</code></td></tr>
+<tr><td>Constructor ref</td><td><code>ClassName::new</code></td></tr>
+<tr><td>Stream from list</td><td><code>list.stream()</code></td></tr>
+<tr><td>Stream from array</td><td><code>Arrays.stream(arr)</code></td></tr>
+<tr><td>Stream of values</td><td><code>Stream.of(1, 2, 3)</code></td></tr>
+<tr><td>Infinite stream</td><td><code>Stream.iterate(0, x-&gt;x+1)</code> or <code>Stream.generate(Math::random)</code></td></tr>
+<tr><td>IntStream range</td><td><code>IntStream.range(1,5)</code> (exclusive) / <code>IntStream.rangeClosed(1,5)</code> (inclusive)</td></tr>
+<tr><td>filter</td><td><code>.filter(x -&gt; x &gt; 5)</code></td></tr>
+<tr><td>map</td><td><code>.map(String::toUpperCase)</code></td></tr>
+<tr><td>flatMap</td><td><code>.flatMap(list -&gt; list.stream())</code></td></tr>
+<tr><td>sorted (custom)</td><td><code>.sorted(Comparator.comparingInt(String::length).reversed())</code></td></tr>
+<tr><td>collect to list</td><td><code>.collect(Collectors.toList())</code></td></tr>
+<tr><td>groupingBy</td><td><code>Collectors.groupingBy(String::length)</code></td></tr>
+<tr><td>groupingBy + counting</td><td><code>Collectors.groupingBy(String::length, Collectors.counting())</code></td></tr>
+<tr><td>partitioningBy</td><td><code>Collectors.partitioningBy(n -&gt; n%2==0)</code></td></tr>
+<tr><td>joining</td><td><code>Collectors.joining(", ", "[", "]")</code></td></tr>
+<tr><td>toMap with merge</td><td><code>Collectors.toMap(k-&gt;k, v-&gt;1L, Long::sum)</code></td></tr>
+<tr><td>parallel stream</td><td><code>list.parallelStream()</code> or <code>stream.parallel()</code></td></tr>
+<tr><td>forEachOrdered</td><td><code>stream.forEachOrdered(System.out::println)</code></td></tr>
+<tr><td>mapToInt</td><td><code>stream.mapToInt(String::length).sum()</code></td></tr>
+<tr><td>summaryStatistics</td><td><code>IntStream.rangeClosed(1,10).summaryStatistics()</code></td></tr>
+</tbody>
+</table></div>
+
+<div class="sub">Common Pitfalls</div>
+<div class="box orange"><span class="box-icon">&#9888;&#65039;</span><div class="box-body"><span class="box-title">Pitfall 1: Stream Reuse</span><p class="box-text">After any terminal operation, the stream is closed. Storing a stream in a variable and using it twice throws <code>IllegalStateException</code>. Fix: always call <code>list.stream()</code> fresh each time.</p></div></div>
+<div class="box orange"><span class="box-icon">&#9888;&#65039;</span><div class="box-body"><span class="box-title">Pitfall 2: Infinite Stream Without limit()</span><p class="box-text"><code>Stream.generate()</code> and <code>Stream.iterate()</code> produce infinite streams. Calling a non-short-circuit terminal op like <code>count()</code> hangs forever (OOM). Always pair with <code>.limit(n)</code>.</p></div></div>
+<div class="box orange"><span class="box-icon">&#9888;&#65039;</span><div class="box-body"><span class="box-title">Pitfall 3: toMap() Duplicate Keys</span><p class="box-text">Without a merge function, <code>toMap()</code> throws <code>IllegalStateException: Duplicate key</code>. Always provide the third argument when duplicates are possible: <code>Collectors.toMap(k, v, (old, n) -&gt; old)</code>.</p></div></div>
+<div class="box orange"><span class="box-icon">&#9888;&#65039;</span><div class="box-body"><span class="box-title">Pitfall 4: Parallel Stream with Shared Mutable State</span><p class="box-text">Updating a shared variable inside a parallel stream causes race conditions. Use <code>reduce()</code>, <code>collect()</code>, or <code>AtomicInteger</code>. Lambda captured variables must be final or effectively final.</p></div></div>
+<div class="box orange"><span class="box-icon">&#9888;&#65039;</span><div class="box-body"><span class="box-title">Pitfall 5: Parallel for Small Data</span><p class="box-text">Thread management overhead makes <code>parallelStream()</code> slower than sequential for small datasets or trivial operations. Only use parallel when dataset is large AND per-element work is CPU-intensive AND elements are independent.</p></div></div>
+
+<div class="sub">5 Golden Tips</div>
+<div class="box green"><span class="box-icon">&#9989;</span><div class="box-body"><span class="box-title">Remember These Always</span><p class="box-text">
+1. Think in 3 stages: SOURCE &rarr; INTERMEDIATE OPS &rarr; TERMINAL OP.<br>
+2. Intermediate ops are LAZY &mdash; nothing runs until a terminal op is called.<br>
+3. A stream is ONE-TIME-USE &mdash; recreate it from the source when needed again.<br>
+4. Prefer primitive streams (IntStream) for numeric work to avoid boxing overhead.<br>
+5. Use <code>parallelStream()</code> only for large, CPU-intensive, independent operations.
+</p></div></div>
+
+<div class="sub">When to Use Parallel Streams</div>
+<div class="tw"><table>
+<thead><tr><th>Situation</th><th>Sequential</th><th>Parallel</th></tr></thead>
+<tbody>
+<tr><td>Small dataset (&lt;1,000 elements)</td><td>&#9989; Preferred</td><td>&#10060; Overhead outweighs gain</td></tr>
+<tr><td>Large dataset (&gt;100,000 elements)</td><td>Acceptable</td><td>&#9989; Preferred</td></tr>
+<tr><td>CPU-intensive per-element work</td><td>Acceptable</td><td>&#9989; Strongly preferred</td></tr>
+<tr><td>I/O bound (DB, network)</td><td>&#9989; Preferred</td><td>&#10060; Threads mostly wait</td></tr>
+<tr><td>Order-dependent (cumulative sum)</td><td>&#9989; Required</td><td>&#10060; Results will be wrong</td></tr>
+<tr><td>Independent stateless ops (map, filter)</td><td>Works</td><td>&#9989; Works and faster</td></tr>
+</tbody>
+</table></div>
+
+<div class="sub">Next Topics to Study</div>
+<div class="box blue"><span class="box-icon">&#128161;</span><div class="box-body"><span class="box-title">Optional&lt;T&gt; and Date/Time API</span><p class="box-text">
+<strong>Optional&lt;T&gt;</strong>: A wrapper for a value that may or may not be present. Several Stream terminal ops return Optional (findFirst, min, max, reduce). Key methods: <code>isPresent()</code>, <code>get()</code>, <code>orElse()</code>, <code>orElseThrow()</code>, <code>ifPresent()</code>, <code>map()</code>, <code>filter()</code>, <code>orElseGet(Supplier)</code>.<br><br>
+<strong>Date and Time API (java.time)</strong>: Replaces the broken <code>java.util.Date</code>. Immutable, thread-safe. Key classes: <code>LocalDate</code>, <code>LocalTime</code>, <code>LocalDateTime</code>, <code>ZonedDateTime</code>, <code>Duration</code>, <code>Period</code>, <code>DateTimeFormatter</code>. Also integrates with Streams &mdash; <code>localDate.datesUntil(endDate)</code> returns a <code>Stream&lt;LocalDate&gt;</code>.
+</p></div></div>
+</section>
+
+</div><!-- .page -->
+<footer>
+  <p>Java 8 Streams &amp; Functional Programming &mdash; Complete Self-Contained Notes &nbsp;&middot;&nbsp; All sections: Lambda, Functional Interfaces, Predicates, Functions, Streams, Collectors, Parallel, Primitive Streams</p>
+</footer>
+</body>
+</html>

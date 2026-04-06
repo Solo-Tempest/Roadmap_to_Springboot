@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java Lambda Expressions — Complete Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2333;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --accent2: #f78166;
+    --accent3: #3fb950;
+    --accent4: #d2a8ff;
+    --yellow: #e3b341;
+    --tag-bg: rgba(88,166,255,0.12);
+    --tag-border: rgba(88,166,255,0.3);
+
+    --syn-keyword: #c792ea;
+    --syn-type: #82aaff;
+    --syn-string: #c3e88d;
+    --syn-number: #f78c6c;
+    --syn-comment: #546e7a;
+    --syn-method: #82aaff;
+    --syn-var: #eeffff;
+    --syn-class: #ffcb6b;
+    --syn-punct: #89ddff;
+    --syn-annotation: #f07178;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  header {
+    background: linear-gradient(135deg, #0d1117 0%, #1a1f35 60%, #0d1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 2rem 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(210,168,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; right: 0;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(88,166,255,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-inner { max-width: 900px; margin: 0 auto; position: relative; }
+  .lang-badge {
+    display: inline-block;
+    background: rgba(210,168,255,0.12);
+    border: 1px solid rgba(210,168,255,0.3);
+    color: var(--accent4);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 2px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    line-height: 1.15;
+    background: linear-gradient(135deg, #e6edf3 0%, #d2a8ff 50%, #58a6ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+  .subtitle { color: var(--muted); font-size: 14px; font-weight: 300; }
+  .subtitle span { color: var(--accent4); font-weight: 500; }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+  .toc-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .toc ol { padding-left: 1.2rem; }
+  .toc li { margin: 4px 0; }
+  .toc a { color: var(--accent); text-decoration: none; font-size: 14px; }
+  .toc a:hover { text-decoration: underline; }
+
+  .section { margin-bottom: 2.8rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    background: linear-gradient(135deg, var(--accent4), var(--accent));
+    color: white;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  h2 { font-family: 'Syne', sans-serif; font-size: 1.25rem; font-weight: 700; color: var(--text); }
+  h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--accent4);
+    margin: 1.4rem 0 0.6rem;
+  }
+  p { color: #c9d1d9; margin-bottom: 0.8rem; }
+
+  .info-box {
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    margin: 1rem 0;
+    font-size: 14px;
+    border-left: 3px solid;
+  }
+  .info-box.blue   { background: rgba(88,166,255,0.07);  border-color: var(--accent);  }
+  .info-box.green  { background: rgba(63,185,80,0.07);   border-color: var(--accent3); }
+  .info-box.purple { background: rgba(210,168,255,0.07); border-color: var(--accent4); }
+  .info-box.orange { background: rgba(247,129,102,0.07); border-color: var(--accent2); }
+  .info-box.yellow { background: rgba(227,179,65,0.07);  border-color: var(--yellow);  }
+  .info-box strong { display: block; margin-bottom: 4px; font-size: 13px; letter-spacing: 0.04em; }
+  .info-box.blue   strong { color: var(--accent);  }
+  .info-box.green  strong { color: var(--accent3); }
+  .info-box.purple strong { color: var(--accent4); }
+  .info-box.orange strong { color: var(--accent2); }
+  .info-box.yellow strong { color: var(--yellow);  }
+
+  .code-wrap {
+    background: #11151c;
+    border: 1px solid #2a2f3a;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 1.2rem 0;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: #1a1f2b;
+    border-bottom: 1px solid #2a2f3a;
+  }
+  .code-dots { display: flex; gap: 6px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+  .code-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.05em; }
+  pre {
+    padding: 1.2rem 1.4rem;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px;
+    line-height: 1.9;
+    tab-size: 4;
+  }
+
+  .output-wrap {
+    background: #0a0f0a;
+    border: 1px solid #1e3a1e;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: -0.5rem 0 1.2rem;
+  }
+  .output-header {
+    padding: 6px 14px;
+    background: #0f1e0f;
+    border-bottom: 1px solid #1e3a1e;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent3);
+    letter-spacing: 0.08em;
+  }
+  .output-header::before { content: '▶ '; }
+  .output-body {
+    padding: 0.9rem 1.4rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: #a6e22e;
+    line-height: 1.8;
+    white-space: pre;
+  }
+
+  /* Syntax */
+  .kw  { color: var(--syn-keyword); }
+  .ty  { color: var(--syn-type); font-style: italic; }
+  .st  { color: var(--syn-string); }
+  .nm  { color: var(--syn-number); }
+  .cm  { color: var(--syn-comment); font-style: italic; }
+  .mt  { color: var(--syn-method); }
+  .vr  { color: var(--syn-var); }
+  .cl  { color: var(--syn-class); }
+  .pu  { color: var(--syn-punct); }
+  .ar  { color: #89ddff; font-weight: 600; }   /* arrow → */
+  .lm  { color: #c3e88d; }                      /* lambda highlight */
+
+  /* Transform diagram */
+  .transform-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.4rem;
+    margin: 1.2rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+  .transform-title { color: var(--muted); font-size: 11px; letter-spacing: 0.06em; margin-bottom: 12px; text-transform: uppercase; }
+  .transform-row { display: flex; align-items: center; gap: 14px; margin: 8px 0; flex-wrap: wrap; }
+  .transform-code { background: #11151c; border: 1px solid #2a2f3a; border-radius: 6px; padding: 6px 12px; flex: 1; min-width: 200px; }
+  .transform-arrow { color: var(--accent3); font-size: 16px; flex-shrink: 0; }
+  .transform-label { color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+  .strike { text-decoration: line-through; color: var(--accent2); opacity: 0.7; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 1rem 0; }
+  th {
+    background: var(--surface2);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    text-align: left;
+  }
+  td { padding: 9px 14px; border: 1px solid var(--border); color: #c9d1d9; vertical-align: top; }
+  tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  td code { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--syn-string); background: rgba(195,232,141,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  p code, li code { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #c3e88d; background: rgba(195,232,141,0.08); padding: 2px 6px; border-radius: 4px; }
+
+  ul, ol { padding-left: 1.4rem; margin-bottom: 0.8rem; }
+  li { margin: 5px 0; color: #c9d1d9; font-size: 14.5px; }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="lang-badge">☕ JAVA 8 · FUNCTIONAL PROGRAMMING</div>
+    <h1>Lambda Expressions</h1>
+    <p class="subtitle">Complete notes with examples &nbsp;·&nbsp; <span>Syntax · Functional Interfaces · Real-World Usage</span></p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">📋 Table of Contents</div>
+    <ol>
+      <li><a href="#s1">What is a Lambda Expression?</a></li>
+      <li><a href="#s2">Syntax — How to Write a Lambda</a></li>
+      <li><a href="#s3">Syntax Rules &amp; Shortcuts</a></li>
+      <li><a href="#s4">Benefits of Lambda Expressions</a></li>
+      <li><a href="#s5">Functional Interface — The Key Requirement</a></li>
+      <li><a href="#s6">Creating Your Own Functional Interface</a></li>
+      <li><a href="#s7">Three Ways to Implement a Functional Interface</a></li>
+      <li><a href="#s8">Lambda with Threads (Runnable)</a></li>
+      <li><a href="#s9">Lambda in GUI — ActionListener Example</a></li>
+      <li><a href="#s10">Summary &amp; Quick Reference</a></li>
+    </ol>
+  </div>
+
+
+  <!-- ─── SECTION 1 ─── -->
+  <div class="section" id="s1">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <h2>What is a Lambda Expression?</h2>
+    </div>
+
+    <p>A <strong>Lambda Expression</strong> is an <em>anonymous function</em> — a function that has no name, no explicit return type declaration, and no access modifier. It was introduced in <strong>Java 8 (Java 1.8)</strong>.</p>
+
+    <div class="info-box yellow">
+      <strong>⭐ Java Version — Important!</strong>
+      Lambda expressions were introduced in Java 1.8. They cannot be used in Java 1.7, 1.6, or earlier versions. Along with Streams, they are the most important feature added in Java 8.
+    </div>
+
+    <h3>Anonymous Function — Definition</h3>
+    <p>A normal function (method) has four parts: <strong>modifier</strong>, <strong>return type</strong>, <strong>name</strong>, and <strong>body</strong>. An anonymous function has none of the first three — only the body matters.</p>
+
+    <div class="transform-box">
+      <div class="transform-title">// Transforming a normal method → Lambda</div>
+
+      <div style="margin-bottom: 8px;"><span style="color:var(--muted); font-size:12px;">STEP 1 — Normal method</span></div>
+      <div class="transform-code">
+        <span class="kw">public</span> <span class="kw">void</span> <span class="mt">greet</span><span class="pu">()</span> <span class="pu">{</span>
+        <span class="cl">  System</span><span class="pu">.</span><span class="vr">out</span><span class="pu">.</span><span class="mt">println</span><span class="pu">(</span><span class="st">"Hello"</span><span class="pu">);</span>
+        <span class="pu">}</span>
+      </div>
+
+      <div style="margin: 10px 0; color: var(--muted); font-size: 12px;">Remove modifier, return type, name → add arrow symbol <span style="color:var(--accent3)">-&gt;</span></div>
+
+      <div style="margin-bottom: 8px;"><span style="color:var(--muted); font-size:12px;">STEP 2 — Lambda</span></div>
+      <div class="transform-code">
+        <span class="pu">()</span> <span class="ar">-&gt;</span> <span class="pu">{</span> <span class="cl">System</span><span class="pu">.</span><span class="vr">out</span><span class="pu">.</span><span class="mt">println</span><span class="pu">(</span><span class="st">"Hello"</span><span class="pu">);</span> <span class="pu">}</span>
+      </div>
+    </div>
+
+    <div class="info-box blue">
+      <strong>💡 Simple Definition</strong>
+      Lambda = parameters + arrow symbol + body &nbsp;&nbsp; i.e. &nbsp;&nbsp; <code>(params) -&gt; { body }</code>
+    </div>
+  </div>
+
+
+  <!-- ─── SECTION 2 ─── -->
+  <div class="section" id="s2">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <h2>Syntax — How to Write a Lambda</h2>
+    </div>
+
+    <p>The general syntax of a lambda expression is:</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Lambda Syntax</span></div>
+      <pre><span class="cm">// General form</span>
+<span class="pu">(</span><span class="vr">parameters</span><span class="pu">)</span> <span class="ar">-&gt;</span> <span class="pu">{</span> <span class="vr">body</span> <span class="pu">}</span>
+
+<span class="cm">// ── Example 1: No parameters, no return ──</span>
+<span class="pu">()</span> <span class="ar">-&gt;</span> <span class="pu">{</span> <span class="cl">System</span><span class="pu">.</span><span class="vr">out</span><span class="pu">.</span><span class="mt">println</span><span class="pu">(</span><span class="st">"Hello from Lambda!"</span><span class="pu">);</span> <span class="pu">}</span>
+
+<span class="cm">// ── Example 2: With parameters, returns value ──</span>
+<span class="pu">(</span><span class="kw">int</span> <span class="vr">a</span><span class="pu">,</span> <span class="kw">int</span> <span class="vr">b</span><span class="pu">)</span> <span class="ar">-&gt;</span> <span class="pu">{</span> <span class="kw">return</span> <span class="vr">a</span> <span class="pu">+</span> <span class="vr">b</span><span class="pu">;</span> <span class="pu">}</span>
+
+<span class="cm">// ── Example 3: Single parameter ──</span>
+<span class="pu">(</span><span class="cl">String</span> <span class="vr">s</span><span class="pu">)</span> <span class="ar">-&gt;</span> <span class="pu">{</span> <span class="kw">return</span> <span class="vr">s</span><span class="pu">.</span><span class="mt">length</span><span class="pu">();</span> <span class="pu">}</span></pre>
+    </div>
+
+    <h3>Full Example — Normal Method to Lambda</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Normal Method vs Lambda</span></div>
+      <pre><span class="cm">// ── Normal method that adds two numbers ──</span>
+<span class="kw">public</span> <span class="kw">int</span> <span class="mt">sum</span><span class="pu">(</span><span class="kw">int</span> <span class="vr">a</span><span class="pu">,</span> <span class="kw">int</span> <span class="vr">b</span><span class="pu">)</span> <span class="pu">{</span>
+    <span class="kw">return</span> <span class="vr">a</span> <span class="pu">+</span> <span class="vr">b</span><span class="pu">;</span>
+<span class="pu">}</span>
+
+<span class="cm">// ── Step 1: Remove modifier (public) and return type (int) ──</span>
+<span class="cm">// ── Step 2: Remove method name (sum) ──</span>
+<span class="cm">// ── Step 3: Add arrow symbol (->) after parameters ──</span>
+
+<span class="cm">// ── Lambda version ──</span>
+<span class="pu">(</span><span class="kw">int</span> <span class="vr">a</span><span class="pu">,</span> <span class="kw">int</span> <span class="vr">b</span><span class="pu">)</span> <span class="ar">-&gt;</span> <span class="pu">{</span> <span class="kw">return</span> <span class="vr">a</span> <span class="pu">+</span> <span class="vr">b</span><span class="pu">;</span> <span class="pu">}</span>
+
+<span class="cm">// ── Shortest version (single expression — see Section 3) ──</span>
+<span class="pu">(</span><span class="vr">a</span><span class="pu">,</span> <span class="vr">b</span><span class="pu">)</span> <span class="ar">-&gt;</span> <span class="vr">a</span> <span class="pu">+</span> <span class="vr">b</span></pre>
+    </div>
+  </div>
+
+
+  <!-- ─── SECTION 3 ─── -->
+  <div class="section" id="s3">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <h2>Syntax Rules &amp; Shortcuts</h2>
+    </div>
+
+    <p>There are two important shortcut rules that make lambdas even shorter:</p>
+
+    <h3>Rule 1 — Single Statement: Remove braces &amp; return</h3>
+    <p>If the lambda body contains only <strong>one statement</strong>, you can remove the curly braces <code>{}</code> and the <code>return</code> keyword.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Rule 1 — Single Statement Shortcut</span></div>
+      <pre><span class="cm">// Full lambda — with braces and return</span>
+<span class="pu">(</span><span class="kw">int</span> <span class="vr">a</span><span class="pu">,</span> <span class="kw">int</span> <span class="vr">b</span><span class="pu">)</span> <span class="ar">-&gt;</span> <span class="pu">{</span> <span class="kw">return</span> <span class="vr">a</span> <span class="pu">+</span> <span class="vr">b</span><span class="pu">;</span> <span class="pu">}</span>
+
+<span class="cm">// Shortcut — single statement, remove {} and return</span>
+<span class="pu">(</span><span class="kw">int</span> <span class="vr">a</span><span class="pu">,</span> <span class="kw">int</span> <span class="vr">b</span><span class="pu">)</span> <span class="ar">-&gt;</span> <span class="vr">a</span> <span class="pu">+</span> <span class="vr">b</span>
+
+<span class="cm">// Multiple statements — MUST use braces</span>
+<span class="pu">(</span><span class="kw">int</span> <span class="vr">a</span><span class="pu">,</span> <span class="kw">int</span> <span class="vr">b</span><span class="pu">)</span> <span class="ar">-&gt;</span> <span class="pu">{</span>
+    <span class="cl">System</span><span class="pu">.</span><span class="vr">out</span><span class="pu">.</span><span class="mt">println</span><span class="pu">(</span><span class="st">"Adding..."</span><span class="pu">);</span>
+    <span class="kw">return</span> <span class="vr">a</span> <span class="pu">+</span> <span class="vr">b</span><span class="pu">;</span>   <span class="cm">// return keyword required here</span>
+<span class="pu">}</span></pre>
+    </div>
+
+    <h3>Rule 2 — Type Inference: Remove parameter types</h3>
+    <p>The Java compiler can <strong>automatically infer</strong> the type of parameters from the functional interface. So you don't need to write types explicitly.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Rule 2 — Type Inference</span></div>
+      <pre><span class="cm">// With types written explicitly</span>
+<span class="pu">(</span><span class="kw">int</span> <span class="vr">a</span><span class="pu">,</span> <span class="kw">int</span> <span class="vr">b</span><span class="pu">)</span> <span class="ar">-&gt;</span> <span class="vr">a</span> <span class="pu">+</span> <span class="vr">b</span>
+
+<span class="cm">// Without types — compiler infers from the functional interface</span>
+<span class="pu">(</span><span class="vr">a</span><span class="pu">,</span> <span class="vr">b</span><span class="pu">)</span> <span class="ar">-&gt;</span> <span class="vr">a</span> <span class="pu">+</span> <span class="vr">b</span>      <span class="cm">// ✅ same result, shorter!</span>
+
+<span class="cm">// String parameter — type inferred automatically</span>
+<span class="cm">// Full:    (String s) -> { return s.length(); }</span>
+<span class="cm">// Short:   s -> s.length()</span>
+<span class="vr">s</span> <span class="ar">-&gt;</span> <span class="vr">s</span><span class="pu">.</span><span class="mt">length</span><span class="pu">()</span>
+
+<span class="cm">// How does the compiler infer types?</span>
+<span class="cm">// → It reads the functional interface the lambda is assigned to</span>
+<span class="cm">// → The method signature of that interface tells it the types</span></pre>
+    </div>
+
+    <div class="info-box blue">
+      <strong>💡 How Type Inference Works</strong>
+      When you assign a lambda to a functional interface variable, the compiler looks at the abstract method of that interface, reads its parameter types, and applies them automatically to your lambda. You never need to re-type them.
+    </div>
+
+    <h3>Complete Shortcut Progression</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">From Verbose to Minimal</span></div>
+      <pre><span class="cm">// Level 1 — Full lambda</span>
+<span class="pu">(</span><span class="kw">int</span> <span class="vr">a</span><span class="pu">,</span> <span class="kw">int</span> <span class="vr">b</span><span class="pu">)</span> <span class="ar">-&gt;</span> <span class="pu">{</span> <span class="kw">return</span> <span class="vr">a</span> <span class="pu">+</span> <span class="vr">b</span><span class="pu">;</span> <span class="pu">}</span>
+
+<span class="cm">// Level 2 — Remove braces + return (single statement)</span>
+<span class="pu">(</span><span class="kw">int</span> <span class="vr">a</span><span class="pu">,</span> <span class="kw">int</span> <span class="vr">b</span><span class="pu">)</span> <span class="ar">-&gt;</span> <span class="vr">a</span> <span class="pu">+</span> <span class="vr">b</span>
+
+<span class="cm">// Level 3 — Remove types (type inference)</span>
+<span class="pu">(</span><span class="vr">a</span><span class="pu">,</span> <span class="vr">b</span><span class="pu">)</span> <span class="ar">-&gt;</span> <span class="vr">a</span> <span class="pu">+</span> <span class="vr">b</span>    <span class="cm">// ← most concise!</span></pre>
+    </div>
+  </div>
+
+
+  <!-- ─── SECTION 4 ─── -->
+  <div class="section" id="s4">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <h2>Benefits of Lambda Expressions</h2>
+    </div>
+
+    <h3>1 — Reduces Lines of Code</h3>
+    <p>A task that previously required creating a class, implementing an interface, and overriding a method can now be done in a single line.</p>
+
+    <h3>2 — Can Only Be Used with Functional Interfaces</h3>
+    <p>Lambdas are purpose-built for functional interfaces (interfaces with exactly one abstract method). This keeps their usage clean and predictable.</p>
+
+    <h3>3 — Enables Passing Behavior as a Parameter</h3>
+    <p>You can pass a lambda (a function) as an argument to another method. This is called <strong>behavior parameterization</strong> and is the core of functional programming.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Passing Lambda as Argument</span></div>
+      <pre><span class="cm">// You can pass a lambda directly to a method expecting a functional interface</span>
+<span class="vr">someMethod</span><span class="pu">((</span><span class="vr">a</span><span class="pu">,</span> <span class="vr">b</span><span class="pu">)</span> <span class="ar">-&gt;</span> <span class="vr">a</span> <span class="pu">+</span> <span class="vr">b</span><span class="pu">);</span>   <span class="cm">// behavior passed inline, no class needed</span></pre>
+    </div>
+
+    <h3>4 — Enables Functional Programming in Java</h3>
+    <p>Before Java 8, Java was purely Object-Oriented. Lambdas introduced the ability to treat functions as first-class citizens — passing them around just like objects. This is a major paradigm shift.</p>
+
+    <h3>5 — More Readable and Maintainable Code</h3>
+    <p>Code becomes shorter, cleaner, and easier to understand. Less boilerplate means fewer bugs and faster development.</p>
+
+    <div class="info-box green">
+      <strong>✅ Summary of Benefits</strong>
+      Reduces boilerplate code · Supports passing behavior · Enables functional programming · Makes code more readable · Works seamlessly with Java's Collections and Streams API.
+    </div>
+
+    <div class="info-box purple">
+      <strong>📌 Historical Context</strong>
+      Other programming languages (like Python, JavaScript, Scala) had lambda/anonymous function support long before Java. Java 8 finally brought this capability to Java, making it competitive with modern functional languages.
+    </div>
+  </div>
+
+
+  <!-- ─── SECTION 5 ─── -->
+  <div class="section" id="s5">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <h2>Functional Interface — The Key Requirement</h2>
+    </div>
+
+    <p>A lambda expression <strong>can only be used with a Functional Interface</strong>. This is the most important rule to remember.</p>
+
+    <div class="info-box yellow">
+      <strong>⭐ Definition — Functional Interface</strong>
+      A Functional Interface is any interface that has <strong>exactly one abstract method</strong>. It can have default or static methods, but only ONE abstract method.
+    </div>
+
+    <h3>Built-in Functional Interfaces in Java</h3>
+    <p>Java already provides many functional interfaces. The most common ones you will encounter are:</p>
+
+    <table>
+      <tr><th>Interface</th><th>Package</th><th>Abstract Method</th><th>Used For</th></tr>
+      <tr><td><code>Runnable</code></td><td>java.lang</td><td><code>run()</code></td><td>Thread tasks</td></tr>
+      <tr><td><code>Comparable</code></td><td>java.lang</td><td><code>compareTo()</code></td><td>Sorting/comparing</td></tr>
+      <tr><td><code>ActionListener</code></td><td>java.awt</td><td><code>actionPerformed()</code></td><td>GUI button events</td></tr>
+      <tr><td><code>Callable</code></td><td>java.util.concurrent</td><td><code>call()</code></td><td>Tasks with return value</td></tr>
+    </table>
+
+    <h3>@FunctionalInterface Annotation</h3>
+    <p>You can mark your interface with <code>@FunctionalInterface</code> to tell the compiler to enforce the single-method rule. If you accidentally add a second method, the compiler will give an error.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">@FunctionalInterface</span></div>
+      <pre><span class="pu">@</span><span class="an">FunctionalInterface</span>           <span class="cm">// optional but recommended</span>
+<span class="kw">interface</span> <span class="cl">MyInter</span> <span class="pu">{</span>
+    <span class="kw">void</span> <span class="mt">sayHello</span><span class="pu">();</span>            <span class="cm">// only ONE abstract method allowed</span>
+    <span class="cm">// void anotherMethod();   ❌ compiler error — breaks @FunctionalInterface</span>
+<span class="pu">}</span></pre>
+    </div>
+
+    <div class="info-box orange">
+      <strong>⚠️ Without @FunctionalInterface</strong>
+      The annotation is optional — the interface still works as a functional interface with just one method. But adding <code>@FunctionalInterface</code> gives you compile-time safety. Without it, someone could accidentally add another method and break all lambdas using it.
+    </div>
+  </div>
+
+
+  <!-- ─── SECTION 6 ─── -->
+  <div class="section" id="s6">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <h2>Creating Your Own Functional Interface</h2>
+    </div>
+
+    <p>You can create a custom functional interface and use a lambda to implement it. Here is a complete example:</p>
+
+    <h3>Example 1 — Simple Greeting</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Custom Functional Interface — No Parameters</span></div>
+      <pre><span class="cm">// Step 1: Create the functional interface</span>
+<span class="pu">@</span><span class="an">FunctionalInterface</span>
+<span class="kw">interface</span> <span class="cl">MyInter</span> <span class="pu">{</span>
+    <span class="kw">void</span> <span class="mt">sayHello</span><span class="pu">();</span>
+<span class="pu">}</span>
+
+<span class="cm">// Step 2: Use a lambda to implement it</span>
+<span class="kw">public</span> <span class="kw">class</span> <span class="cl">Main</span> <span class="pu">{</span>
+    <span class="kw">public static void</span> <span class="mt">main</span><span class="pu">(</span><span class="cl">String</span><span class="pu">[]</span> <span class="vr">args</span><span class="pu">)</span> <span class="pu">{</span>
+
+        <span class="cm">// Lambda assigned to functional interface reference</span>
+        <span class="cl">MyInter</span> <span class="vr">i1</span> <span class="pu">=</span> <span class="pu">()</span> <span class="ar">-&gt;</span> <span class="cl">System</span><span class="pu">.</span><span class="vr">out</span><span class="pu">.</span><span class="mt">println</span><span class="pu">(</span><span class="st">"Hello from Lambda!"</span><span class="pu">);</span>
+
+        <span class="cm">// Call the method via the reference</span>
+        <span class="vr">i1</span><span class="pu">.</span><span class="mt">sayHello</span><span class="pu">();</span>
+
+        <span class="cm">// Reuse the reference with a different lambda</span>
+        <span class="cl">MyInter</span> <span class="vr">i2</span> <span class="pu">=</span> <span class="pu">()</span> <span class="ar">-&gt;</span> <span class="cl">System</span><span class="pu">.</span><span class="vr">out</span><span class="pu">.</span><span class="mt">println</span><span class="pu">(</span><span class="st">"Second time using lambda!"</span><span class="pu">);</span>
+        <span class="vr">i2</span><span class="pu">.</span><span class="mt">sayHello</span><span class="pu">();</span>
+    <span class="pu">}</span>
+<span class="pu">}</span></pre>
+    </div>
+    <div class="output-wrap">
+      <div class="output-header">OUTPUT</div>
+      <div class="output-body">Hello from Lambda!
+Second time using lambda!</div>
+    </div>
+
+    <h3>Example 2 — With Parameters &amp; Return Value</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Custom Functional Interface — Parameters + Return</span></div>
+      <pre><span class="cm">// Functional interface that takes two ints and returns an int</span>
+<span class="pu">@</span><span class="an">FunctionalInterface</span>
+<span class="kw">interface</span> <span class="cl">MathInter</span> <span class="pu">{</span>
+    <span class="kw">int</span> <span class="mt">operate</span><span class="pu">(</span><span class="kw">int</span> <span class="vr">a</span><span class="pu">,</span> <span class="kw">int</span> <span class="vr">b</span><span class="pu">);</span>
+<span class="pu">}</span>
+
+<span class="kw">public class</span> <span class="cl">Main</span> <span class="pu">{</span>
+    <span class="kw">public static void</span> <span class="mt">main</span><span class="pu">(</span><span class="cl">String</span><span class="pu">[]</span> <span class="vr">args</span><span class="pu">)</span> <span class="pu">{</span>
+
+        <span class="cm">// Lambda for addition</span>
+        <span class="cl">MathInter</span> <span class="vr">add</span> <span class="pu">=</span> <span class="pu">(</span><span class="vr">a</span><span class="pu">,</span> <span class="vr">b</span><span class="pu">)</span> <span class="ar">-&gt;</span> <span class="vr">a</span> <span class="pu">+</span> <span class="vr">b</span><span class="pu">;</span>
+
+        <span class="cm">// Lambda for multiplication</span>
+        <span class="cl">MathInter</span> <span class="vr">mul</span> <span class="pu">=</span> <span class="pu">(</span><span class="vr">a</span><span class="pu">,</span> <span class="vr">b</span><span class="pu">)</span> <span class="ar">-&gt;</span> <span class="vr">a</span> <span class="pu">*</span> <span class="vr">b</span><span class="pu">;</span>
+
+        <span class="cl">System</span><span class="pu">.</span><span class="vr">out</span><span class="pu">.</span><span class="mt">println</span><span class="pu">(</span><span class="vr">add</span><span class="pu">.</span><span class="mt">operate</span><span class="pu">(</span><span class="nm">5</span><span class="pu">,</span> <span class="nm">3</span><span class="pu">));</span>   <span class="cm">// 8</span>
+        <span class="cl">System</span><span class="pu">.</span><span class="vr">out</span><span class="pu">.</span><span class="mt">println</span><span class="pu">(</span><span class="vr">mul</span><span class="pu">.</span><span class="mt">operate</span><span class="pu">(</span><span class="nm">5</span><span class="pu">,</span> <span class="nm">3</span><span class="pu">));</span>   <span class="cm">// 15</span>
+    <span class="pu">}</span>
+<span class="pu">}</span></pre>
+    </div>
+    <div class="output-wrap">
+      <div class="output-header">OUTPUT</div>
+      <div class="output-body">8
+15</div>
+    </div>
+
+    <h3>Example 3 — String Length</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">String Length via Lambda</span></div>
+      <pre><span class="pu">@</span><span class="an">FunctionalInterface</span>
+<span class="kw">interface</span> <span class="cl">LengthInter</span> <span class="pu">{</span>
+    <span class="kw">int</span> <span class="mt">getLength</span><span class="pu">(</span><span class="cl">String</span> <span class="vr">s</span><span class="pu">);</span>
+<span class="pu">}</span>
+
+<span class="cl">LengthInter</span> <span class="vr">li</span> <span class="pu">=</span> <span class="vr">s</span> <span class="ar">-&gt;</span> <span class="vr">s</span><span class="pu">.</span><span class="mt">length</span><span class="pu">();</span>   <span class="cm">// type of s inferred from interface</span>
+
+<span class="cl">System</span><span class="pu">.</span><span class="vr">out</span><span class="pu">.</span><span class="mt">println</span><span class="pu">(</span><span class="vr">li</span><span class="pu">.</span><span class="mt">getLength</span><span class="pu">(</span><span class="st">"Hello"</span><span class="pu">));</span>   <span class="cm">// 5</span>
+<span class="cl">System</span><span class="pu">.</span><span class="vr">out</span><span class="pu">.</span><span class="mt">println</span><span class="pu">(</span><span class="vr">li</span><span class="pu">.</span><span class="mt">getLength</span><span class="pu">(</span><span class="st">"Lambda"</span><span class="pu">));</span>  <span class="cm">// 6</span></pre>
+    </div>
+    <div class="output-wrap">
+      <div class="output-header">OUTPUT</div>
+      <div class="output-body">5
+6</div>
+    </div>
+  </div>
+
+
+  <!-- ─── SECTION 7 ─── -->
+  <div class="section" id="s7">
+    <div class="section-header">
+      <div class="section-num">7</div>
+      <h2>Three Ways to Implement a Functional Interface</h2>
+    </div>
+
+    <p>Before lambdas, there were two standard ways to implement an interface. Lambda is the third and cleanest way.</p>
+
+    <h3>Way 1 — Separate Class (old way)</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Way 1 — Separate Class</span></div>
+      <pre><span class="cm">// Create a separate class that implements the interface</span>
+<span class="kw">class</span> <span class="cl">MyInterImpl</span> <span class="kw">implements</span> <span class="cl">MyInter</span> <span class="pu">{</span>
+    <span class="pu">@</span><span class="an">Override</span>
+    <span class="kw">public void</span> <span class="mt">sayHello</span><span class="pu">()</span> <span class="pu">{</span>
+        <span class="cl">System</span><span class="pu">.</span><span class="vr">out</span><span class="pu">.</span><span class="mt">println</span><span class="pu">(</span><span class="st">"Hello from class!"</span><span class="pu">);</span>
+    <span class="pu">}</span>
+<span class="pu">}</span>
+
+<span class="cm">// Use it</span>
+<span class="cl">MyInter</span> <span class="vr">obj</span> <span class="pu">=</span> <span class="kw">new</span> <span class="cl">MyInterImpl</span><span class="pu">();</span>
+<span class="vr">obj</span><span class="pu">.</span><span class="mt">sayHello</span><span class="pu">();</span>
+
+<span class="cm">// Disadvantage: Need to create a whole new file/class just for one method</span></pre>
+    </div>
+
+    <h3>Way 2 — Anonymous Class (less verbose)</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Way 2 — Anonymous Class</span></div>
+      <pre><span class="cm">// No need to create a separate file — implement inline</span>
+<span class="cl">MyInter</span> <span class="vr">obj</span> <span class="pu">=</span> <span class="kw">new</span> <span class="cl">MyInter</span><span class="pu">()</span> <span class="pu">{</span>
+    <span class="pu">@</span><span class="an">Override</span>
+    <span class="kw">public void</span> <span class="mt">sayHello</span><span class="pu">()</span> <span class="pu">{</span>
+        <span class="cl">System</span><span class="pu">.</span><span class="vr">out</span><span class="pu">.</span><span class="mt">println</span><span class="pu">(</span><span class="st">"Hello from anonymous class!"</span><span class="pu">);</span>
+    <span class="pu">}</span>
+<span class="pu">};</span>                <span class="cm">// ← semicolon here!</span>
+
+<span class="vr">obj</span><span class="pu">.</span><span class="mt">sayHello</span><span class="pu">();</span>
+
+<span class="cm">// Better — no separate class file, but still verbose</span></pre>
+    </div>
+
+    <h3>Way 3 — Lambda (best way ✅)</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Way 3 — Lambda Expression</span></div>
+      <pre><span class="cm">// Clean, concise, one line!</span>
+<span class="cl">MyInter</span> <span class="vr">obj</span> <span class="pu">=</span> <span class="pu">()</span> <span class="ar">-&gt;</span> <span class="cl">System</span><span class="pu">.</span><span class="vr">out</span><span class="pu">.</span><span class="mt">println</span><span class="pu">(</span><span class="st">"Hello from Lambda!"</span><span class="pu">);</span>
+<span class="vr">obj</span><span class="pu">.</span><span class="mt">sayHello</span><span class="pu">();</span></pre>
+    </div>
+
+    <table>
+      <tr><th>Way</th><th>Code Needed</th><th>Separate File?</th><th>Recommended?</th></tr>
+      <tr><td>Separate Class</td><td>Most verbose</td><td>Yes</td><td>❌ Old style</td></tr>
+      <tr><td>Anonymous Class</td><td>Medium</td><td>No</td><td>⚠️ Okay</td></tr>
+      <tr><td>Lambda</td><td>Minimal</td><td>No</td><td>✅ Best</td></tr>
+    </table>
+  </div>
+
+
+  <!-- ─── SECTION 8 ─── -->
+  <div class="section" id="s8">
+    <div class="section-header">
+      <div class="section-num">8</div>
+      <h2>Lambda with Threads (Runnable)</h2>
+    </div>
+
+    <p><code>Runnable</code> is a functional interface with one method: <code>run()</code>. This makes it a perfect candidate for lambdas when creating threads.</p>
+
+    <h3>Old Way — Anonymous Class with Thread</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Thread — Old Way (Anonymous Class)</span></div>
+      <pre><span class="cl">Thread</span> <span class="vr">t1</span> <span class="pu">=</span> <span class="kw">new</span> <span class="cl">Thread</span><span class="pu">(</span><span class="kw">new</span> <span class="cl">Runnable</span><span class="pu">()</span> <span class="pu">{</span>
+    <span class="pu">@</span><span class="an">Override</span>
+    <span class="kw">public void</span> <span class="mt">run</span><span class="pu">()</span> <span class="pu">{</span>
+        <span class="kw">for</span> <span class="pu">(</span><span class="kw">int</span> <span class="vr">i</span> <span class="pu">=</span> <span class="nm">1</span><span class="pu">;</span> <span class="vr">i</span> <span class="pu">&lt;=</span> <span class="nm">5</span><span class="pu">;</span> <span class="vr">i</span><span class="pu">++)</span> <span class="pu">{</span>
+            <span class="cl">System</span><span class="pu">.</span><span class="vr">out</span><span class="pu">.</span><span class="mt">println</span><span class="pu">(</span><span class="st">"Thread 1: "</span> <span class="pu">+</span> <span class="vr">i</span><span class="pu">);</span>
+        <span class="pu">}</span>
+    <span class="pu">}</span>
+<span class="pu">});</span>
+<span class="vr">t1</span><span class="pu">.</span><span class="mt">start</span><span class="pu">();</span></pre>
+    </div>
+
+    <h3>New Way — Lambda with Thread</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Thread — Lambda Way</span></div>
+      <pre><span class="cm">// Thread 1 — prints 1 to 10</span>
+<span class="cl">Thread</span> <span class="vr">t1</span> <span class="pu">=</span> <span class="kw">new</span> <span class="cl">Thread</span><span class="pu">(()</span> <span class="ar">-&gt;</span> <span class="pu">{</span>
+    <span class="kw">for</span> <span class="pu">(</span><span class="kw">int</span> <span class="vr">i</span> <span class="pu">=</span> <span class="nm">1</span><span class="pu">;</span> <span class="vr">i</span> <span class="pu">&lt;=</span> <span class="nm">10</span><span class="pu">;</span> <span class="vr">i</span><span class="pu">++)</span>
+        <span class="cl">System</span><span class="pu">.</span><span class="vr">out</span><span class="pu">.</span><span class="mt">println</span><span class="pu">(</span><span class="st">"Friend: "</span> <span class="pu">+</span> <span class="vr">i</span><span class="pu">);</span>
+<span class="pu">});</span>
+
+<span class="cm">// Thread 2 — prints multiplication table of 2</span>
+<span class="cl">Thread</span> <span class="vr">t2</span> <span class="pu">=</span> <span class="kw">new</span> <span class="cl">Thread</span><span class="pu">(()</span> <span class="ar">-&gt;</span> <span class="pu">{</span>
+    <span class="kw">for</span> <span class="pu">(</span><span class="kw">int</span> <span class="vr">i</span> <span class="pu">=</span> <span class="nm">1</span><span class="pu">;</span> <span class="vr">i</span> <span class="pu">&lt;=</span> <span class="nm">10</span><span class="pu">;</span> <span class="vr">i</span><span class="pu">++)</span>
+        <span class="cl">System</span><span class="pu">.</span><span class="vr">out</span><span class="pu">.</span><span class="mt">println</span><span class="pu">(</span><span class="st">"2 × "</span> <span class="pu">+</span> <span class="vr">i</span> <span class="pu">+</span> <span class="st">" = "</span> <span class="pu">+</span> <span class="pu">(</span><span class="nm">2</span> <span class="pu">*</span> <span class="vr">i</span><span class="pu">));</span>
+<span class="pu">});</span>
+
+<span class="vr">t1</span><span class="pu">.</span><span class="mt">setName</span><span class="pu">(</span><span class="st">"Thread-1"</span><span class="pu">);</span>
+<span class="vr">t2</span><span class="pu">.</span><span class="mt">setName</span><span class="pu">(</span><span class="st">"Thread-2"</span><span class="pu">);</span>
+<span class="vr">t1</span><span class="pu">.</span><span class="mt">start</span><span class="pu">();</span>
+<span class="vr">t2</span><span class="pu">.</span><span class="mt">start</span><span class="pu">();</span>   <span class="cm">// both run concurrently</span></pre>
+    </div>
+    <div class="output-wrap">
+      <div class="output-header">OUTPUT (order may vary — concurrent threads)</div>
+      <div class="output-body">Friend: 1
+2 × 1 = 2
+Friend: 2
+2 × 2 = 4
+...etc (interleaved)</div>
+    </div>
+
+    <div class="info-box green">
+      <strong>✅ Why Lambda Works Here</strong>
+      <code>Runnable</code> is a functional interface — it has only one method <code>run()</code>. The lambda body becomes the implementation of <code>run()</code>. No extra class needed, no boilerplate.
+    </div>
+  </div>
+
+
+  <!-- ─── SECTION 9 ─── -->
+  <div class="section" id="s9">
+    <div class="section-header">
+      <div class="section-num">9</div>
+      <h2>Lambda in GUI — ActionListener Example</h2>
+    </div>
+
+    <p><code>ActionListener</code> is a functional interface from Java's Swing GUI library. It has one method: <code>actionPerformed(ActionEvent e)</code>. It is triggered when a user clicks a button.</p>
+
+    <h3>Old Way — Anonymous Class</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">ActionListener — Old Way</span></div>
+      <pre><span class="vr">button</span><span class="pu">.</span><span class="mt">addActionListener</span><span class="pu">(</span><span class="kw">new</span> <span class="cl">ActionListener</span><span class="pu">()</span> <span class="pu">{</span>
+    <span class="pu">@</span><span class="an">Override</span>
+    <span class="kw">public void</span> <span class="mt">actionPerformed</span><span class="pu">(</span><span class="cl">ActionEvent</span> <span class="vr">e</span><span class="pu">)</span> <span class="pu">{</span>
+        <span class="cl">JOptionPane</span><span class="pu">.</span><span class="mt">showMessageDialog</span><span class="pu">(</span><span class="kw">null</span><span class="pu">,</span> <span class="st">"Button Clicked!"</span><span class="pu">);</span>
+    <span class="pu">}</span>
+<span class="pu">});</span>   <span class="cm">// verbose and boilerplate-heavy</span></pre>
+    </div>
+
+    <h3>New Way — Lambda</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">ActionListener — Lambda Way</span></div>
+      <pre><span class="cm">// Lambda replaces the entire anonymous class</span>
+<span class="vr">button</span><span class="pu">.</span><span class="mt">addActionListener</span><span class="pu">(</span><span class="vr">e</span> <span class="ar">-&gt;</span>
+    <span class="cl">JOptionPane</span><span class="pu">.</span><span class="mt">showMessageDialog</span><span class="pu">(</span><span class="kw">null</span><span class="pu">,</span> <span class="st">"Button Clicked!"</span><span class="pu">)</span>
+<span class="pu">);</span>
+
+<span class="cm">// ── Full Swing Example ──</span>
+<span class="kw">import</span> <span class="vr">javax.swing.*</span><span class="pu">;</span>
+<span class="kw">import</span> <span class="vr">java.awt.*</span><span class="pu">;</span>
+
+<span class="kw">public class</span> <span class="cl">MyWindow</span> <span class="pu">{</span>
+    <span class="kw">public static void</span> <span class="mt">main</span><span class="pu">(</span><span class="cl">String</span><span class="pu">[]</span> <span class="vr">args</span><span class="pu">)</span> <span class="pu">{</span>
+        <span class="cl">JFrame</span> <span class="vr">frame</span> <span class="pu">=</span> <span class="kw">new</span> <span class="cl">JFrame</span><span class="pu">(</span><span class="st">"My Window"</span><span class="pu">);</span>
+        <span class="cl">JButton</span> <span class="vr">button</span> <span class="pu">=</span> <span class="kw">new</span> <span class="cl">JButton</span><span class="pu">(</span><span class="st">"Click Me"</span><span class="pu">);</span>
+
+        <span class="cm">// Lambda handles button click event</span>
+        <span class="vr">button</span><span class="pu">.</span><span class="mt">addActionListener</span><span class="pu">(</span><span class="vr">e</span> <span class="ar">-&gt;</span>
+            <span class="cl">JOptionPane</span><span class="pu">.</span><span class="mt">showMessageDialog</span><span class="pu">(</span><span class="kw">null</span><span class="pu">,</span> <span class="st">"Button Clicked!"</span><span class="pu">)</span>
+        <span class="pu">);</span>
+
+        <span class="vr">frame</span><span class="pu">.</span><span class="mt">setDefaultCloseOperation</span><span class="pu">(</span><span class="cl">JFrame</span><span class="pu">.</span><span class="vr">EXIT_ON_CLOSE</span><span class="pu">);</span>
+        <span class="vr">frame</span><span class="pu">.</span><span class="mt">setSize</span><span class="pu">(</span><span class="nm">400</span><span class="pu">,</span> <span class="nm">300</span><span class="pu">);</span>
+        <span class="vr">frame</span><span class="pu">.</span><span class="mt">setLayout</span><span class="pu">(</span><span class="kw">null</span><span class="pu">);</span>
+        <span class="vr">button</span><span class="pu">.</span><span class="mt">setBounds</span><span class="pu">(</span><span class="nm">150</span><span class="pu">,</span> <span class="nm">100</span><span class="pu">,</span> <span class="nm">100</span><span class="pu">,</span> <span class="nm">40</span><span class="pu">);</span>
+        <span class="vr">frame</span><span class="pu">.</span><span class="mt">add</span><span class="pu">(</span><span class="vr">button</span><span class="pu">);</span>
+        <span class="vr">frame</span><span class="pu">.</span><span class="mt">setVisible</span><span class="pu">(</span><span class="kw">true</span><span class="pu">);</span>
+    <span class="pu">}</span>
+<span class="pu">}</span></pre>
+    </div>
+
+    <div class="info-box orange">
+      <strong>⚠️ Lambda Limitation — Multi-Method Interfaces</strong>
+      If an interface has more than one abstract method (e.g., <code>MouseMotionListener</code> has <code>mouseDragged()</code> and <code>mouseMoved()</code>), you CANNOT use a lambda. You must use an anonymous class or an adapter class instead. Lambda only works with functional interfaces (exactly 1 abstract method).
+    </div>
+
+    <div class="info-box blue">
+      <strong>💡 Where Lambdas Are Used Everywhere</strong>
+      GUI event handling · Thread creation (Runnable) · Sorting with Comparator · Collections forEach · Stream operations (filter, map, reduce) · Android event callbacks · Spring Framework beans
+    </div>
+  </div>
+
+
+  <!-- ─── SECTION 10 — SUMMARY ─── -->
+  <div class="section" id="s10">
+    <div class="section-header">
+      <div class="section-num">10</div>
+      <h2>Summary &amp; Quick Reference</h2>
+    </div>
+
+    <h3>🧠 Key Concepts at a Glance</h3>
+    <table>
+      <tr><th>Concept</th><th>What to Remember</th></tr>
+      <tr><td><strong>Lambda Expression</strong></td><td>Anonymous function — no name, no modifier, no return type. Introduced in Java 8.</td></tr>
+      <tr><td><strong>Basic Syntax</strong></td><td><code>(params) -&gt; { body }</code> — parameters + arrow symbol + body</td></tr>
+      <tr><td><strong>Rule 1 — Single Statement</strong></td><td>If body has only one statement, remove <code>{}</code> and <code>return</code> keyword.</td></tr>
+      <tr><td><strong>Rule 2 — Type Inference</strong></td><td>Compiler infers parameter types from the functional interface. No need to write them.</td></tr>
+      <tr><td><strong>Functional Interface</strong></td><td>Interface with exactly ONE abstract method. Lambda can only be used with these.</td></tr>
+      <tr><td><strong>@FunctionalInterface</strong></td><td>Optional annotation — tells compiler to enforce the single-method rule.</td></tr>
+      <tr><td><strong>3 Ways to Implement</strong></td><td>Separate class (old) → Anonymous class (better) → Lambda (best ✅)</td></tr>
+      <tr><td><strong>Runnable + Lambda</strong></td><td>Runnable is a functional interface (<code>run()</code>). Pass lambda directly to <code>new Thread()</code>.</td></tr>
+      <tr><td><strong>ActionListener + Lambda</strong></td><td>ActionListener is functional (<code>actionPerformed()</code>). Pass lambda to <code>addActionListener()</code>.</td></tr>
+      <tr><td><strong>Limitation</strong></td><td>Lambda ONLY works with functional interfaces (1 abstract method). Multi-method interfaces need anonymous class.</td></tr>
+    </table>
+
+    <h3>📋 Syntax Cheat Sheet</h3>
+    <table>
+      <tr><th>Scenario</th><th>Lambda Syntax</th></tr>
+      <tr><td>No params, no return</td><td><code>() -&gt; System.out.println("Hi")</code></td></tr>
+      <tr><td>No params, with return</td><td><code>() -&gt; 42</code></td></tr>
+      <tr><td>One param (type inferred)</td><td><code>s -&gt; s.length()</code></td></tr>
+      <tr><td>Two params, no return</td><td><code>(a, b) -&gt; System.out.println(a + b)</code></td></tr>
+      <tr><td>Two params, with return</td><td><code>(a, b) -&gt; a + b</code></td></tr>
+      <tr><td>Multi-statement body</td><td><code>(a, b) -&gt; { int sum = a+b; return sum; }</code></td></tr>
+      <tr><td>With explicit types</td><td><code>(int a, int b) -&gt; a + b</code></td></tr>
+    </table>
+
+    <h3>⚠️ Common Pitfalls — Never Forget</h3>
+
+    <div class="info-box orange" style="margin-bottom:10px;">
+      <strong>1 — Lambda requires a Functional Interface</strong>
+      You cannot store a lambda in just any variable. It must be assigned to a functional interface type. Without a target functional interface, the compiler won't know what type the lambda is.
+    </div>
+
+    <div class="info-box orange" style="margin-bottom:10px;">
+      <strong>2 — Multi-method interfaces block lambdas</strong>
+      If an interface has 2 or more abstract methods (e.g., MouseMotionListener), you cannot use a lambda. Use an anonymous class or adapter class instead.
+    </div>
+
+    <div class="info-box orange" style="margin-bottom:10px;">
+      <strong>3 — Don't mix up shortcut rules</strong>
+      You can only remove <code>{}</code> and <code>return</code> when the body is a single expression. If there are multiple lines, braces are mandatory and <code>return</code> must be written explicitly.
+    </div>
+
+    <div class="info-box orange" style="margin-bottom:10px;">
+      <strong>4 — Java version matters</strong>
+      Lambdas only work in Java 8 (1.8) and above. If your project uses Java 7 or earlier, lambdas will cause a compilation error.
+    </div>
+
+    <div class="info-box orange" style="margin-bottom:10px;">
+      <strong>5 — @FunctionalInterface is optional but recommended</strong>
+      Not using it means someone can accidentally add a second method to your interface, silently breaking all lambdas that use it. Always annotate custom functional interfaces.
+    </div>
+
+    <h3>✅ When to Use Lambda</h3>
+    <table>
+      <tr><th>Situation</th><th>Use Lambda?</th><th>Why</th></tr>
+      <tr><td>Interface has exactly 1 abstract method</td><td>✅ Yes</td><td>It is a functional interface</td></tr>
+      <tr><td>Creating a Thread (Runnable)</td><td>✅ Yes</td><td>Runnable has only run()</td></tr>
+      <tr><td>GUI button click (ActionListener)</td><td>✅ Yes</td><td>ActionListener has only actionPerformed()</td></tr>
+      <tr><td>Sorting with Comparator</td><td>✅ Yes</td><td>Comparator has only compare()</td></tr>
+      <tr><td>Streams — filter, map, forEach</td><td>✅ Yes</td><td>All take functional interfaces</td></tr>
+      <tr><td>Interface with 2+ abstract methods</td><td>❌ No</td><td>Not a functional interface — use anonymous class</td></tr>
+    </table>
+
+    <div class="info-box blue" style="margin-top: 1.5rem;">
+      <strong>🚀 Next Topic — Streams API</strong>
+      Streams work hand-in-hand with lambdas. You will use lambda expressions inside <code>stream().filter()</code>, <code>.map()</code>, <code>.sorted()</code>, <code>.forEach()</code> and more. Streams are the most powerful Java 8 feature and require a strong understanding of lambdas.
+    </div>
+
+  </div>
+
+  <hr>
+  <div style="text-align:center; color: var(--muted); font-size: 13px; font-family: 'JetBrains Mono', monospace; padding: 1rem 0;">
+    Java 8 · Lambda Expressions &nbsp;·&nbsp; Next: Streams API →
+  </div>
+
+</div>
+</body>
+</html>
