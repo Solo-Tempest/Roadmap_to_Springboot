@@ -19,7 +19,6 @@ public class Q2_SystemFlow {
                 int squared = makeSquare.apply(random);
                 print.accept(squared);
             }
-
         }
     }
 }
